@@ -1,0 +1,56 @@
+{
+	"development": {
+		"database": {
+			"mssql": {
+				"host": "192.168.10.1",
+				"port": "1433",
+				"userName": "deividy",
+				"password": "123456",
+				"database": "TesteNode"
+			}
+		},
+		"proxy": {
+			"iis": {
+				"host": "192.168.10.1",
+				"port": 85
+			}
+		}
+	},
+	"test": {
+		"database": {
+			"mssql": {
+				"host": "DATABASE_HOST",
+				"port": "1433",
+				"userName": "DATABASE_USER",
+				"password": "DATABASE_PASSWORD",
+				"database": "DATABASE_NAME"
+			}
+		},
+		"proxy": {
+			"iis": {
+				"host": "IIS_HOST",
+				"port": 85
+			}
+		}
+	},
+	"production": {
+		"database": {
+			"mssql": {
+				"host": "DATABASE_HOST",
+				"port": "1433",
+				"userName": "DATABASE_USER",
+				"password": "DATABASE_PASSWORD",
+				"database": "DATABASE_NAME"
+			}
+		},
+		"proxy": {
+			"iis": {
+				"host": "IIS_HOST",
+				"port": 85
+			}
+		}
+	},
+	"all": {
+		
+	}
+}

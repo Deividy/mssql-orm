@@ -1,0 +1,9 @@
+{
+  "name": "mssql-orm",
+  "description": "ORM for SQL Server",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "tds": "0.1"
+  }
+}
