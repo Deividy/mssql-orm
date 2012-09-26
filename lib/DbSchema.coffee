@@ -8,6 +8,7 @@ class DbSchema
 	execute: (stmt, callback) ->
 		DbUtils.execute(stmt, callback)
 
+	# Not using, yet.
 	getAllTables: (tables, callback) ->
 		@execute("SELECT * FROM INFORMATION_SCHEMA.TABLES", (data) ->
 			data.forEach((item)->
@@ -46,7 +47,7 @@ class DbSchema
 						tables[fk.tblName]["belongsTo"].push(belongs)
 
 						if (!tables[belongs]["hasMany"]) then tables[belongs]["hasMany"] = []
-						
+
 						tables[belongs]["hasMany"].push(fk.tblName)
 						callback(tables)
 					)
@@ -69,6 +70,7 @@ class DbSchema
 			)
 			callback(tables)
 		)
+		
 	mountDbTree: (callback) ->
 		self = @
 		dbTree = {}

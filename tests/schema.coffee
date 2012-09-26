@@ -30,4 +30,6 @@ config = data[env].database.mssql
 	
 
 m = new DbSchema(config)
-m.mountDbTree(console.log)
+m.mountDbTree((ret) ->
+	console.log(ret)
+)
