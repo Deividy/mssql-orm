@@ -1,6 +1,7 @@
 #  --------- @Usage --------------------- #
 DbSchema =  require("../mssql-orm").DbSchema
 DbTable =   require("../mssql-orm").DbTable
+DbUtils =   require("../mssql-orm").DbUtils
 fs = require('fs')
 
 env = "development"
@@ -8,27 +9,28 @@ env = "development"
 data = JSON.parse(fs.readFileSync("./config.json", "utf-8"))
 config = data[env].database.mssql
 	
-m = new DbSchema(config)
-m.getDbTree((tree)->
+dbs = new DbSchema(config)
+dbs.getDbTree((tree)->
   tables = tree.tables
-  console.log(tables.msgs)
+  models = {}
+  for tableName, tableData of tables
+
+    models[tableName] = class
+      constructor: (@data) ->
+        if(!@data) then @data = []
+
+      save: ->
+        console.log(@data)
+
+    for colName, data of tableData.columns
+      models[tableName]::["set"] = (field, value) -> 
+        @data[field] = value
+
+      models[tableName]::["get"] = (field) -> 
+        return @data[field]
+
+  user = new models['users']()
+  user.set("users_id", 'oi')
+  user.set("login", "Teste")
+  user.save()
 )
-
-###
-  for table of tables
-    table = class extends DbTable
-
-  new users()
-data = [{ users_id:1, login: 'deividy', pass: '123' }, { login: 'deividy', pass: '123' }]
-models = {
-  User: {
-    ...
-  },
-  Msg: {
-    ...
-  } 
-}
-u = new m.User(data)
-u.setLogin('d')
-u.save()
-###

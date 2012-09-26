@@ -57,7 +57,7 @@ class DbSchema
 
 						fKey = {
 							fk: 					item.getValue('CONSTRAINT_NAME')
-							rk: 					bkey
+							bk: 					bkey
 							belongsTo: 		belongs
 							onDelete: 		item.getValue('DELETE_RULE')
 							onUpdate:			item.getValue('UPDATE_RULE')
