@@ -11,14 +11,14 @@ tables = [
     }
 ]
 
+DbTable = require('../lib/DbTable')
+
 for tbl in tables
-	tbl.class = class
-		@table = tbl.name
-
-		constructor: ->
-
-		getTable: ->
-			@table
-
-m = new tables[0].class()
-console.log(m)
+  tbl.class = class extends DbTable
+    table: tbl.name
+  
+m = new tables[0].class
+# m.select
+q = m.query()
+console.log q
+# console.log(m.getTable())
