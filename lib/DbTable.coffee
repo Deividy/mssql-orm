@@ -1,6 +1,6 @@
 class DbTable
-	@table 
-	constructor: (@table) ->
+	constructor: (table) ->
+		@table = table if table? 
 
 	getTable: -> 
 		@table
@@ -11,11 +11,11 @@ class DbTable
 
 	save: (callback) ->
 
-	find: (id, callback) ->
+	get: (id, callback) ->
 
 	fetchAll: (where, callback) ->
 
-	select: ->
+	query: ->
 		self = @		
 		if (!@whereStatment) then @whereStatment = []
 		if (!@orderStatment) then @orderStatment = []
