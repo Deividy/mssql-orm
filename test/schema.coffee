@@ -11,7 +11,7 @@ config = data[env].database.mssql
 m = new DbSchema(config)
 m.getDbTree((tree)->
   tables = tree.tables
-  console.log(tables)
+  console.log(tables.msgs)
 )
 
 ###

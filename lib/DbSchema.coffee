@@ -43,7 +43,8 @@ class DbSchema
 			)
 			fkeys.forEach((fk) ->
 				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME, 
-											b.UNIQUE_CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
+											b.UNIQUE_CONSTRAINT_NAME, b.UPDATE_RULE, b.DELETE_RULE
+											FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
 
 											LEFT JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS b 
 											on a.CONSTRAINT_NAME = b.UNIQUE_CONSTRAINT_NAME 
@@ -55,9 +56,11 @@ class DbSchema
 						bkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
 
 						fKey = {
-							fk: item.getValue('CONSTRAINT_NAME')
-							rk: bkey
-							belongsTo: belongs
+							fk: 					item.getValue('CONSTRAINT_NAME')
+							rk: 					bkey
+							belongsTo: 		belongs
+							onDelete: 		item.getValue('DELETE_RULE')
+							onUpdate:			item.getValue('UPDATE_RULE')
 						}
 
 						tables[fk.tblName]["fk"].push(fKey)
