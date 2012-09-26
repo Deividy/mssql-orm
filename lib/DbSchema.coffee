@@ -30,14 +30,16 @@ class DbSchema
 				if (!tables[tblName])
 					tables[tblName] = {}
 					tables[tblName]["fk"] = []
+					tables[tblName]["pk"] = []
+					tables[tblName]["uk"] = []
 					tables[tblName]["belongsTo"] = []
 					tables[tblName]["hasMany"] = []
 					tables[tblName]['columns'] = {}
 
 				switch (constraintKey)
-					when "PRIMARY KEY" then tables[tblName]["pk"] = colName
+					when "PRIMARY KEY" then tables[tblName]["pk"].push(colName)
 					when "FOREIGN KEY" then fkeys.push( { "tblName": tblName, fKey :colName  })					
-					when "UNIQUE" then tables[tblName]["uq"] = colName
+					when "UNIQUE" then tables[tblName]["uk"].push(colName)
 			)
 			fkeys.forEach((fk) ->
 				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME, 
@@ -50,9 +52,14 @@ class DbSchema
 				(data) ->
 					data.forEach((item)->
 						belongs = item.getValue('TABLE_NAME')
-						fKey = item.getValue('CONSTRAINT_NAME')
 						bkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
-						
+
+						fKey = {
+							fk: item.getValue('CONSTRAINT_NAME')
+							rk: bkey
+							belongsTo: belongs
+						}
+
 						tables[fk.tblName]["fk"].push(fKey)
 						tables[fk.tblName]["belongsTo"].push(belongs)
 						tables[belongs]["hasMany"].push(fk.tblName)
@@ -73,10 +80,10 @@ class DbSchema
 				colName = item.getValue('COLUMN_NAME')
 
 				tables[tblName]['columns'][colName] = { 
-				 	index: 			item.getValue('ORDINAL_POSITION')
-				 	default:		item.getValue('COLUMN_DEFAULT')
-				 	isNull:			item.getValue('IS_NULLABLE')
-					type: 			item.getValue('DATA_TYPE')
+				 	index: 				item.getValue('ORDINAL_POSITION')
+				 	default:			item.getValue('COLUMN_DEFAULT')
+				 	isNull:				item.getValue('IS_NULLABLE')
+					type: 				item.getValue('DATA_TYPE')
 					maxLength: 		item.getValue('CHARACTER_MAXIMUM_LENGTH')
 					octLength: 		item.getValue('CHARACTER_OCTET_LENGTH')
 				}

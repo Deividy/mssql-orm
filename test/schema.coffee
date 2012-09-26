@@ -12,12 +12,13 @@ m = new DbSchema(config)
 m.getDbTree((tree)->
   tables = tree.tables
   console.log(tables)
+)
+
+###
   for table of tables
     table = class extends DbTable
 
   new users()
-)
-###
 data = [{ users_id:1, login: 'deividy', pass: '123' }, { login: 'deividy', pass: '123' }]
 models = {
   User: {
