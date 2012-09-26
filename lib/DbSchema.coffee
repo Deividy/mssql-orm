@@ -99,8 +99,8 @@ class DbSchema
 		dbTree = {}
 		@getConstraints(dbTree, (tables) ->
 			self.getColumns(tables, (tables) ->
-				tables = { tables: tables }
-				callback(tables)
+				dbTree = { tables: tables }
+				callback(dbTree)
 			)
 		)
 		
