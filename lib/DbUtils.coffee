@@ -1,11 +1,14 @@
+tds = require('tds')
 class DbUtils
-	@setConn: (@conn) ->
+	@setConn: (@config) ->
+		
 
 	@connect: (callback) ->
 		self = @
+		@conn = new tds.Connection(@config)
 		@conn.connect((err) ->
 			if (err) 
-				console.error('Error: ', err)
+				console.error('Received error: ', err)
 			else
 				self.conn.on('error', (error) ->
 				  console.error('Received error', error)

@@ -26,14 +26,13 @@
 
 #  --------- @Usage --------------------- #
 DbSchema = require("../mssql-orm").DbSchema
-tds = require('tds')
 fs = require('fs')
 
 env = "development"
 
 data = JSON.parse(fs.readFileSync("./config.json", "utf-8"))
 config = data[env].database.mssql
-conn = new tds.Connection(config)	
+	
 
-m = new DbSchema(conn)
+m = new DbSchema(config)
 m.mountDbTree(console.log)
