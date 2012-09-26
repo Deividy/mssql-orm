@@ -18,7 +18,7 @@ class DbSchema
 		)
 
 	getConstraints: (tables, callback) ->
-		self =@
+		self = @
 		@execute("SELECT CONSTRAINT_NAME, TABLE_NAME, CONSTRAINT_TYPE  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS", (data) ->
 			fkeys = []
 			data.forEach((item)->

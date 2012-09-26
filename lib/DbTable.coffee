@@ -3,7 +3,7 @@ class DbTable
 
 	getTable: -> 
 		@table
-		
+
 	select: ->
 		self = @		
 		if (!@whereStatment) then @whereStatment = []
@@ -62,3 +62,5 @@ class DbTable
 		getQuery: ->
 			stmt = "SELECT * FROM #{self.table} #{@getWhere()} #{@getOrder()} #{@getLimit()}"
 			return stmt;
+
+module.exports = DbTable

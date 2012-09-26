@@ -30,9 +30,9 @@
 ###
 
 #  --------- @Usage --------------------- #
-DbSchema = require("../mssql-orm").DbSchema
-DbUtils = require("../mssql-orm").DbUtils
-DbTable = require("../mssql-orm").DbTable
+DbSchema =  require("../mssql-orm").DbSchema
+DbUtils =   require("../mssql-orm").DbUtils
+DbTable =   require("../mssql-orm").DbTable
 
 fs = require('fs')
 
@@ -43,7 +43,6 @@ config = data[env].database.mssql
 	
 m = new DbSchema(config)
 m.getDbTree((tree)->
-  for tbl of tree.tables
-    console.log(tbl)
-    console.log(tree.tables[tbl])
+  console.log(tree.tables.msgs)
+
 )
