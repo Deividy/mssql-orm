@@ -39,12 +39,14 @@ class DbSchema
 						fKey = item.getValue('CONSTRAINT_NAME')
 						bkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
 						
-						tables[fk.tblName]["fk"] = fKey
+						if (!tables[fk.tblName]["fk"]) then tables[fk.tblName]["fk"] = []
+						tables[fk.tblName]["fk"].push(fKey)
 
 						if (!tables[fk.tblName]["belongsTo"]) then tables[fk.tblName]["belongsTo"] = []
 						tables[fk.tblName]["belongsTo"].push(belongs)
 
 						if (!tables[belongs]["hasMany"]) then tables[belongs]["hasMany"] = []
+						
 						tables[belongs]["hasMany"].push(fk.tblName)
 						callback(tables)
 					)
