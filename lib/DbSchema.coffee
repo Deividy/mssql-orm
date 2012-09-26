@@ -9,7 +9,7 @@ class DbSchema
 		DbUtils.execute(stmt, callback)
 
 	getAllTables: (tables, callback) ->
-		@execute("SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS", (data) ->
+		@execute("SELECT * FROM INFORMATION_SCHEMA.TABLES", (data) ->
 			data.forEach((item)->
 				tblName = item.getValue(2)
 				tables[tblName] = {}
