@@ -14,7 +14,7 @@
      columns: { users_id: [Object], login: [Object], pass: [Object] } },
   msgs: 
    { pk: 'msg_id',
-     fk: 'FK__msgs__users_id__1920BF5C',
+     fk: [ 'FK__msgs__users_id__1920BF5C' ],
      belongsTo: [ 'users' ],
      columns: { msg_id: [Object], users_id: [Object], msg: [Object] } } }
 ###
