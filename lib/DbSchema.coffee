@@ -42,7 +42,7 @@ class DbSchema
 					when "UNIQUE" then tables[tblName]["uk"].push(colName)
 			)
 			fkeys.forEach((fk) ->
-				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME, 
+				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME,
 											b.UNIQUE_CONSTRAINT_NAME, b.UPDATE_RULE, b.DELETE_RULE
 											FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
 
@@ -74,10 +74,10 @@ class DbSchema
 		)
 
 	getColumns: (tables, callback) ->
-		@execute("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, 
-			DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH FROM INFORMATION_SCHEMA.COLUMNS", 
+		@execute("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, 
+			IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH
+			FROM INFORMATION_SCHEMA.COLUMNS", 	(data) ->
 
-		(data) ->
 			data.forEach((item) ->
 				tblName = item.getValue('TABLE_NAME')
 				colName = item.getValue('COLUMN_NAME')
