@@ -1,6 +1,6 @@
 {
   "name": "mssql-orm",
-  "description": "ORM for SQL Server",
+  "description": "ORM for Microsoft SQL Server",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
