@@ -1,27 +1,5 @@
-tds = require('tds')
-fs = require('fs')
-util = require("util")
-
-class DbTable extends DatabaseSchema
-
-	execute: (stmt, callback) ->
-		data = []
-		@connect((conn) ->
-			stmt = conn.createStatement(stmt)
-
-			stmt.on('row', (row) ->
-				console.log(row.metadata.columns)
-				obj = {}
-				for column in row.metadata.columns
-					obj[column.name] = row.getValue(column.name)
-
-				data.push(obj)
-			)
-			stmt.on('done', ->
-				callback(data)
-			)
-			stmt.execute()
-		)
+class DbTable
+	constructor: (@table) ->
 
 	select: ->
 		self = @		
@@ -30,7 +8,6 @@ class DbTable extends DatabaseSchema
 
 		where: (w) ->
 			self.whereStatment.push(w)
-
 		order: (o) ->
 			self.orderStatment.push(o)
 		limit: (l) ->
@@ -73,7 +50,7 @@ class DbTable extends DatabaseSchema
 			return orderstmt
 
 		getLimit: ->
-			# How make limit em MSSQL?
+			# How make limit in MSSQL?
 			#if (self.limitStatment) 
 				#return " LIMIT #{self.limitStatment}"
 			#else 
@@ -82,28 +59,3 @@ class DbTable extends DatabaseSchema
 		getQuery: ->
 			stmt = "SELECT * FROM #{self.table} #{@getWhere()} #{@getOrder()} #{@getLimit()}"
 			return stmt;
-
-	fetchAll: (callback) ->
-		@execute(callback)
-
-	find: (id, callback) ->
-		obj = {}
-		obj[@primary_key] = id
-		@select().where(obj)
-		@execute(callback)
-
-	getTable: ->
-		return @table
-
-class User extends DbTable
-	
-
-
-m = new User()
-
-
-m.execute((data)->
-	data.forEach((item) ->
-		util.inspect(item)
-	)
-)

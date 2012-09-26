@@ -1,2 +1,2 @@
-mssql-orm
+Test project
 =========
