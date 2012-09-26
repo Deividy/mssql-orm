@@ -1,6 +1,9 @@
 class DbTable
 	constructor: (@table) ->
 
+	getTable: -> 
+		@table
+		
 	select: ->
 		self = @		
 		if (!@whereStatment) then @whereStatment = []

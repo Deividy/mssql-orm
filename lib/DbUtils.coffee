@@ -1,6 +1,6 @@
 tds = require('tds')
 class DbUtils
-	@setConn: (@config) ->
+	@setConfig: (@config) ->
 		
 
 	@connect: (callback) ->
