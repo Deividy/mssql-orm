@@ -1,8 +1,19 @@
 class DbTable
+	@table 
 	constructor: (@table) ->
 
 	getTable: -> 
 		@table
+
+	insert: (data, where) ->
+
+	update: (data, where) ->
+
+	save: (callback) ->
+
+	find: (id, callback) ->
+
+	fetchAll: (where, callback) ->
 
 	select: ->
 		self = @		
