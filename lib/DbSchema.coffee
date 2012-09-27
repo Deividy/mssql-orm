@@ -92,7 +92,6 @@ class DbSchema
 						targetKey = {
 							name: 	 tkey
 							columns: fkColumns[fk.tblName][ck]
-							type:	 "PRIMARY_KEY"
 						}
 						fKey = {
 							fk: 	  		ck
