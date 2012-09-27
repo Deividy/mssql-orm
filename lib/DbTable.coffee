@@ -1,20 +1,54 @@
 class DbTable
-	constructor: (table) ->
-		@table = table if table? 
+	constructor: (@data) ->
+			if(!@data) then @data = { }
 
-	getTable: -> 
-		@table
+	set: (column, value) ->
+		@data[column] = value
 
-	insert: (data, where) ->
+	get: (column) ->
+		return @data[column]
+
+	insert: (data) ->
+		console.log("INSERT")
+		console.log(data)
 
 	update: (data, where) ->
+		console.log("UPDATE")
+		console.log(data)
+		console.log(where)
 
-	save: (callback) ->
+	save: ->
+		self = @
+		id = 0
+		pk = ''
+		if (typeof @data is "object" && typeof(@data.length) is "undefined")
+			console.log("OBJECT")
+			# Check keys
+			@tableSchema.uniques.forEach((uks)->
+				for col in uks.columns
+					# Yah, i got that
+					if (self.data[col]) then id = self.data[col]
+					# Oh, i have a id so i'll use that
+					if (self.data['id']) then id = self.data['id'] 
+					# Set the PK column
+					pk = col
+			)
 
-	get: (id, callback) ->
+			if (!id)
+				@insert(@data)
+			else
+				@update(@data, { pk: pk, id: id })
+
+		else
+			console.log("ARRAY")
+			console.log(@data)
+
+
+	find: (id, callback) ->
 
 	fetchAll: (where, callback) ->
 
+	# Waiting...
 	query: ->
 		self = @		
 		if (!@whereStatment) then @whereStatment = []
