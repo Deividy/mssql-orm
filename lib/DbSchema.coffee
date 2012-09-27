@@ -19,28 +19,61 @@ class DbSchema
 
 	getConstraints: (tables, callback) ->
 		self = @
-		@execute("SELECT CONSTRAINT_NAME, TABLE_NAME, CONSTRAINT_TYPE FROM 
-			INFORMATION_SCHEMA.TABLE_CONSTRAINTS", (data) ->
+		@execute("SELECT a.CONSTRAINT_NAME, a.TABLE_NAME, a.CONSTRAINT_TYPE, b.COLUMN_NAME
+			FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
+			LEFT JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE b on
+			a.CONSTRAINT_NAME = b.CONSTRAINT_NAME", (data) ->
 			fkeys = []
+			uniques = []
+			fkColumns = []
+
 			data.forEach((item)->
 				colName = item.getValue('CONSTRAINT_NAME')
 				tblName = item.getValue('TABLE_NAME')
 				constraintKey = item.getValue('CONSTRAINT_TYPE')
+				column = item.getValue('COLUMN_NAME')
 
 				if (!tables[tblName])
 					tables[tblName] = {}
+					tables[tblName]['name'] = tblName
 					tables[tblName]["fk"] = []
-					tables[tblName]["pk"] = []
-					tables[tblName]["uk"] = []
+					tables[tblName]["uniques"] = []
 					tables[tblName]["belongsTo"] = []
 					tables[tblName]["hasMany"] = []
 					tables[tblName]['columns'] = {}
 
 				switch (constraintKey)
-					when "PRIMARY KEY" then tables[tblName]["pk"].push(colName)
-					when "FOREIGN KEY" then fkeys.push( { "tblName": tblName, fKey :colName  })					
-					when "UNIQUE" then tables[tblName]["uk"].push(colName)
+					when "PRIMARY KEY", "UNIQUE"
+						if (!uniques[tblName])
+							uniques[tblName] = []
+
+						if (!uniques[tblName][colName])
+							uniques[tblName][colName] = {}
+							uniques[tblName][colName].columns = []
+							uniques[tblName][colName].type = constraintKey.replace(" ","_")
+
+						uniques[tblName][colName].columns.push(column)
+
+					when "FOREIGN KEY" 
+						if (!fkColumns[tblName])
+							fkColumns[tblName] = []
+
+						if (!fkColumns[tblName][colName])
+							fkColumns[tblName][colName] = []
+
+						fkColumns[tblName][colName].push(column)
+						fkeys.push( { "tblName": tblName, fKey :colName  })
 			)
+			for tbl of uniques
+				for ck of uniques[tbl]
+					keys = { name: ck, columns: [] }
+					for cl in uniques[tbl][ck].columns
+						keys.columns.push(cl)
+
+					keys.type = uniques[tbl][ck].type
+
+				tables[tbl].uniques.push(keys)
+			
 			fkeys.forEach((fk) ->
 				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME,
 											b.UNIQUE_CONSTRAINT_NAME, b.UPDATE_RULE, b.DELETE_RULE
@@ -53,14 +86,20 @@ class DbSchema
 				(data) ->
 					data.forEach((item)->
 						belongs = item.getValue('TABLE_NAME')
-						bkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
+						tkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
+						ck = item.getValue('CONSTRAINT_NAME')
 
+						targetKey = {
+							name: 	 tkey
+							columns: fkColumns[fk.tblName][ck]
+							type:	 "PRIMARY_KEY"
+						}
 						fKey = {
-							fk: 					item.getValue('CONSTRAINT_NAME')
-							bk: 					bkey
-							belongsTo: 		belongs
+							fk: 	  		ck
+							targetKey: 	  	targetKey
+							targetTable:   	belongs
 							onDelete: 		item.getValue('DELETE_RULE')
-							onUpdate:			item.getValue('UPDATE_RULE')
+							onUpdate: 		item.getValue('UPDATE_RULE')
 						}
 
 						tables[fk.tblName]["fk"].push(fKey)
@@ -83,12 +122,12 @@ class DbSchema
 				colName = item.getValue('COLUMN_NAME')
 
 				tables[tblName]['columns'][colName] = { 
-				 	index: 				item.getValue('ORDINAL_POSITION')
-				 	default:			item.getValue('COLUMN_DEFAULT')
-				 	isNull:				item.getValue('IS_NULLABLE')
-					type: 				item.getValue('DATA_TYPE')
-					maxLength: 		item.getValue('CHARACTER_MAXIMUM_LENGTH')
-					octLength: 		item.getValue('CHARACTER_OCTET_LENGTH')
+				 	index: 		item.getValue('ORDINAL_POSITION')
+				 	default:	item.getValue('COLUMN_DEFAULT')
+				 	isNull:		item.getValue('IS_NULLABLE')
+					type: 		item.getValue('DATA_TYPE')
+					maxLength: 	item.getValue('CHARACTER_MAXIMUM_LENGTH')
+					octLength: 	item.getValue('CHARACTER_OCTET_LENGTH')
 				}
 			)
 			callback(tables)

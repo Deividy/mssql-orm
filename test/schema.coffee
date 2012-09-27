@@ -13,9 +13,23 @@ dbs = new DbSchema(config)
 dbs.getDbTree((tree)->
   tables = tree.tables
   models = {}
-  for tableName, tableData of tables
 
-    models[tableName] = class
+  for tableName, tableData of tables
+    # Debugging..
+    console.log("---")
+    console.log("#{tableName}:")
+    console.log(tableData)
+    console.log("Uniques: ")
+    console.log(tableData.uniques)
+    console.log("FK")
+    console.log(tableData.fk)
+    console.log("---")
+    # ..
+
+   ### Tests with dynamic model
+    models[tableName] = class extends DbTable
+      table: tableData.name
+
       constructor: (@data) ->
         if(!@data) then @data = []
 
@@ -29,8 +43,17 @@ dbs.getDbTree((tree)->
       models[tableName]::["get"] = (field) -> 
         return @data[field]
 
-  user = new models['users']()
-  user.set("users_id", 'oi')
-  user.set("login", "Teste")
+  user = new models['users']
+  user.set("login", "testing")
+  user.set('pass', 123)
   user.save()
+
+  data = {
+    users_id: 2
+    login: "test"
+    pass: 123
+  }
+  user = new models['users'](data)
+  user.save()
+  ###
 )
