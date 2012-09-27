@@ -11,8 +11,11 @@ config = data[env].database.mssql
 dnm = new DynamicModels(config)
 dnm.makeModels((m) ->
 
+  m.Users.find()
+  
   user = new m.Users()
   user.set("login", "testing")
+  user.data.login = "Oi"
   user.set('pass', 123)
   user.save()
 

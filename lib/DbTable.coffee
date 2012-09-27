@@ -1,12 +1,12 @@
 _ = require("underscore")
 class DbTable
 	constructor: (@data) ->
-			if(!@data) then @data = { }
+		if(!@data) then @data = { }
 
-	set: (column, value) ->
+	setData: (column, value) ->
 		@data[column] = value
 
-	get: (column) ->
+	getData: (column) ->
 		return @data[column]
 
 	insert: (data) ->
@@ -18,21 +18,6 @@ class DbTable
 		console.log(data)
 		console.log(where)
 
-	# Working..
-	getIdAndPK: (data) ->
-		pk =''
-		id = 0
-		@tableSchema.uniques.forEach((uks)->
-			for col in uks.columns
-				# Yah, i got that
-				if (data[col]) then id = data[col]
-				# Oh, i have a id so i'll use that
-				if (data['id']) then id = data['id'] 
-				# Set the PK column
-				pk = col
-		)
-		return { pk: pk, id: id }
-	#
 	save: ->
 		self = @
 		id = 0
@@ -40,15 +25,15 @@ class DbTable
 
 		if (_.isObject(@data))
 			console.log("OBJECT")
-			# Oh, i have a id so i'll use that
 			if (self.data['id']) then id = self.data['id'] 
 
 			# Check keys
 			@tableSchema.uniques.forEach((uks)->
+				console.log("UKS")
+				console.log(uks)
+				console.log("---")
 				for col in uks.columns
-					# Yah, i got that
 					if (self.data[col]) then id = self.data[col]
-					# Set the PK column
 					pk = col
 			)
 
@@ -62,9 +47,11 @@ class DbTable
 			console.log(@data)
 
 
-	find: (id, callback) ->
+	@find: (where, callback) ->
+	
+	@get: (id, callback) ->
 
-	fetchAll: (where, callback) ->
+	@fetchAll: (where, callback) ->
 
 	# Waiting...
 	query: ->

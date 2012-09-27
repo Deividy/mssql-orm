@@ -19,6 +19,13 @@ class DynamicModels extends DbSchema
 			    	tableName: tableName
 			    	tableSchema: tableData
 
+			    	@find: ->
+
+			    	@persist: ->
+
+			    	@delete: ->
+
+			    	
 			callback(models)
 		)
 
