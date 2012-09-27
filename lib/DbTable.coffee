@@ -1,3 +1,4 @@
+_ = require("underscore")
 class DbTable
 	constructor: (@data) ->
 			if(!@data) then @data = { }
@@ -17,19 +18,36 @@ class DbTable
 		console.log(data)
 		console.log(where)
 
+	# Working..
+	getIdAndPK: (data) ->
+		pk =''
+		id = 0
+		@tableSchema.uniques.forEach((uks)->
+			for col in uks.columns
+				# Yah, i got that
+				if (data[col]) then id = data[col]
+				# Oh, i have a id so i'll use that
+				if (data['id']) then id = data['id'] 
+				# Set the PK column
+				pk = col
+		)
+		return { pk: pk, id: id }
+	#
 	save: ->
 		self = @
 		id = 0
 		pk = ''
-		if (typeof @data is "object" && typeof(@data.length) is "undefined")
+
+		if (_.isObject(@data))
 			console.log("OBJECT")
+			# Oh, i have a id so i'll use that
+			if (self.data['id']) then id = self.data['id'] 
+
 			# Check keys
 			@tableSchema.uniques.forEach((uks)->
 				for col in uks.columns
 					# Yah, i got that
 					if (self.data[col]) then id = self.data[col]
-					# Oh, i have a id so i'll use that
-					if (self.data['id']) then id = self.data['id'] 
 					# Set the PK column
 					pk = col
 			)
