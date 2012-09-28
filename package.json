@@ -2,8 +2,9 @@
   "name": "mssql-orm",
   "description": "ORM for Microsoft SQL Server",
   "version": "0.0.1",
-  "private": true,
+  "private": false,
   "dependencies": {
-    "tds": "0.1"
+    "tds": "0.1",
+    "underscore": "1.3.3"
   }
 }

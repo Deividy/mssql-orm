@@ -1,9 +1,8 @@
 tds = require('tds')
-class DbUtils
-	@setConfig: (@config) ->
-		
+class Database
+	constructor: (@config) ->
 
-	@connect: (callback) ->
+	connect: (callback) ->
 		self = @
 		@conn = new tds.Connection(@config)
 		@conn.connect((err) ->
@@ -19,7 +18,7 @@ class DbUtils
 				callback(self.conn)
 		)
 
-	@execute: (stmt, callback) ->
+	execute: (stmt, callback) ->
 		data = []
 		@connect((conn) ->
 			stmt = conn.createStatement(stmt)
@@ -32,4 +31,4 @@ class DbUtils
 			stmt.execute()
 		)
 
-module.exports = DbUtils
+module.exports = Database

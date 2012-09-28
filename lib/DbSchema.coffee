@@ -1,12 +1,12 @@
-DbUtils = require("./DbUtils")
+Database = require("./Database")
 
 class DbSchema
 
 	constructor: (config) ->
-		DbUtils.setConfig(config)
+		@db = new Database(config)
 
 	execute: (stmt, callback) ->
-		DbUtils.execute(stmt, callback)
+		@db.execute(stmt, callback)
 
 	getAllTablesName: (tables, callback) ->
 		@execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES", (data) ->

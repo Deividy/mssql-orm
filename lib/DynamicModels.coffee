@@ -18,14 +18,13 @@ class DynamicModels extends DbSchema
 			    models[self.nameConvention(tableName)] = class extends DbTable
 			    	tableName: tableName
 			    	tableSchema: tableData
+			    
+			    for column of tableData.columns
+			    	models[self.nameConvention(tableName)]::["get#{self.nameConvention(column)}"] = -> 
+			    		@data[column]
+			    	models[self.nameConvention(tableName)]::["set#{self.nameConvention(column)}"] = (val) -> 
+			    		@data[column] = val
 
-			    	@find: ->
-
-			    	@persist: ->
-
-			    	@delete: ->
-
-			    	
 			callback(models)
 		)
 
