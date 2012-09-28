@@ -5,11 +5,11 @@ class DbSchema
 	constructor: (config) ->
 		@db = new Database(config)
 
-	execute: (stmt, callback) ->
-		@db.execute(stmt, callback)
+	getRows: (stmt, callback) ->
+		@db.getRows(stmt, callback)
 
 	getAllTablesName: (tables, callback) ->
-		@execute("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES", (data) ->
+		@getRows("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES", (data) ->
 			data.forEach((item)->
 				tblName = item.getValue('TABLE_NAME')
 				tables[tblName] = {}
@@ -19,7 +19,7 @@ class DbSchema
 
 	getConstraints: (tables, callback) ->
 		self = @
-		@execute("SELECT a.CONSTRAINT_NAME, a.TABLE_NAME, a.CONSTRAINT_TYPE, b.COLUMN_NAME
+		@getRows("SELECT a.CONSTRAINT_NAME, a.TABLE_NAME, a.CONSTRAINT_TYPE, b.COLUMN_NAME
 			FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
 			LEFT JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE b on
 			a.CONSTRAINT_NAME = b.CONSTRAINT_NAME", (data) ->
@@ -75,7 +75,7 @@ class DbSchema
 				tables[tbl].uniques.push(keys)
 			
 			fkeys.forEach((fk) ->
-				self.execute("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME,
+				self.getRows("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, b.CONSTRAINT_NAME,
 											b.UNIQUE_CONSTRAINT_NAME, b.UPDATE_RULE, b.DELETE_RULE
 											FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
 
@@ -112,7 +112,7 @@ class DbSchema
 		)
 
 	getColumns: (tables, callback) ->
-		@execute("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, 
+		@getRows("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, 
 			IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH
 			FROM INFORMATION_SCHEMA.COLUMNS", 	(data) ->
 

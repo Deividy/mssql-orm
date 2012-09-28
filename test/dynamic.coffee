@@ -10,8 +10,6 @@ config = data[env].database.mssql
 
 dnm = new DynamicModels(config)
 dnm.makeModels((m) ->
-
-
   user = new m.Users()
 
   user.setLogin("xxxx")

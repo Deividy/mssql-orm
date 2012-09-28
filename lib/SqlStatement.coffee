@@ -1,13 +1,7 @@
 class SqlStatement
+	@whereClause
+
 	constructor: (obj) ->
 
-	where: 
-		add: ->
-		or: ->
-		gt: ->
-		gte: ->
-		lt: ->
-		lte: ->
-		between: ->
-		contains: ->
-		like: ->
+	where: (w) ->
+		

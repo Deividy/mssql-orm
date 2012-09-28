@@ -3,7 +3,7 @@ DbSchema = require('./DbSchema')
 
 class DynamicModels extends DbSchema
 	nameConvention: (name) ->
-		# Up first char and format name (we can remove the tbl and other trashs..)
+		# Up first char and format name
 		upc = name.substring(0, 1)
 		name = name.replace(upc, upc.toUpperCase());
 		return name

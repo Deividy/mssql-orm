@@ -5,6 +5,22 @@ class DbTable
 	constructor: (@data) ->
 		if(!@data) then @data = { }
 
+
+	@insertOne: (where, callback) ->
+
+	@updateOne: (where, callback) ->
+
+	@deleteOne: (where, callback) ->
+
+	@findOne: (where, callback) ->
+
+	@findMany: (where, callback) ->
+
+	@deleteMany: (where, callback) ->
+
+	@updateMany: (where, callback) ->
+
+
 	@insert: (data) ->
 		console.log("INSERT")
 		console.log(data)
@@ -30,13 +46,14 @@ class DbTable
 				console.log("---")
 				for col in uks.columns
 					if (self.data[col]) then id = self.data[col]
-						pk = col
+					
+					pk = col
 			)
 
 			if (!id)
-				@insert(@data)
+				insert(@data)
 			else
-				@update(@data, { pk: pk, id: id })
+				update(@data, { pk: pk, id: id })
 
 		else
 			console.log("ARRAY")

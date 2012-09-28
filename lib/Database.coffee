@@ -1,4 +1,5 @@
 tds = require('tds')
+
 class Database
 	constructor: (@config) ->
 
@@ -17,8 +18,9 @@ class Database
 				)
 				callback(self.conn)
 		)
-
-	execute: (stmt, callback) ->
+	query: (stmt, callback) ->
+		
+	getRows: (stmt, callback) ->
 		data = []
 		@connect((conn) ->
 			stmt = conn.createStatement(stmt)
