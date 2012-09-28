@@ -1,14 +1,15 @@
 _ = require("underscore")
+SqlStatement = require('./SqlStatement')
 
-class DbTable extends require('./DbQuery')
+class DbTable
 	constructor: (@data) ->
 		if(!@data) then @data = { }
 
-	insert: (data) ->
+	@insert: (data) ->
 		console.log("INSERT")
 		console.log(data)
 
-	update: (data, where) ->
+	@update: (data, where) ->
 		console.log("UPDATE")
 		console.log(data)
 		console.log(where)
@@ -29,7 +30,7 @@ class DbTable extends require('./DbQuery')
 				console.log("---")
 				for col in uks.columns
 					if (self.data[col]) then id = self.data[col]
-					pk = col
+						pk = col
 			)
 
 			if (!id)
