@@ -10,19 +10,21 @@ class DynamicModels extends DbSchema
 
 	makeModels: (callback) ->
 		self = @
+		nConvetion = self.nameConvention
+
 		@getDbTree((tree)->
 			tables = tree.tables
 			models = {}
 			for tableName, tableData of tables
 				# Create the model
-			    models[self.nameConvention(tableName)] = class extends DbTable
+			    models[nConvetion(tableName)] = class extends DbTable
 			    	tableName: tableName
 			    	tableSchema: tableData
 			    
 			    for column of tableData.columns
-			    	models[self.nameConvention(tableName)]::["get#{self.nameConvention(column)}"] = -> 
+			    	models[nConvetion(tableName)]::["get#{nConvetion(column)}"] = -> 
 			    		@data[column]
-			    	models[self.nameConvention(tableName)]::["set#{self.nameConvention(column)}"] = (val) -> 
+			    	models[nConvetion(tableName)]::["set#{nConvetion(column)}"] = (val) -> 
 			    		@data[column] = val
 
 			callback(models)

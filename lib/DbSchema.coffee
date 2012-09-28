@@ -95,7 +95,7 @@ class DbSchema
 						}
 						fKey = {
 							fk: 	  		ck
-							targetKey: 	  	targetKey
+							targetKey: 		targetKey
 							targetTable:   	belongs
 							onDelete: 		item.getValue('DELETE_RULE')
 							onUpdate: 		item.getValue('UPDATE_RULE')
