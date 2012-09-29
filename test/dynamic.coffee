@@ -12,7 +12,7 @@ dnm = new DynamicModels(config)
 dnm.makeModels((m) ->
   user = new m.Users()
 
-  user.setLogin("xxxx")
+  user.setLogin("test")
   console.log(user.getLogin())
   user.save()
 

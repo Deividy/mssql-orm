@@ -1,13 +1,17 @@
-_ = require("underscore")
 SqlStatement = require('./SqlStatement')
 
+#DbTable just execute the queryes
 class DbTable
 	constructor: (@data) ->
 		if(!@data) then @data = { }
 
 
 	@insertOne: (where, callback) ->
-
+	### @usage, something like that;
+		sql = new SqlStatement(@tableSchema)
+		stmt = sql.insert(where)
+		db.execute(stmt, callback)
+	###
 	@updateOne: (where, callback) ->
 
 	@deleteOne: (where, callback) ->
@@ -20,44 +24,8 @@ class DbTable
 
 	@updateMany: (where, callback) ->
 
-
-	@insert: (data) ->
-		console.log("INSERT")
-		console.log(data)
-
-	@update: (data, where) ->
-		console.log("UPDATE")
-		console.log(data)
-		console.log(where)
-
 	save: ->
-		self = @
-		id = 0
-		pk = ''
 
-		if (_.isObject(@data))
-			console.log("OBJECT")
-			if (self.data['id']) then id = self.data['id'] 
-
-			# Check keys
-			@tableSchema.uniques.forEach((uks)->
-				console.log("UKS")
-				console.log(uks)
-				console.log("---")
-				for col in uks.columns
-					if (self.data[col]) then id = self.data[col]
-					
-					pk = col
-			)
-
-			if (!id)
-				insert(@data)
-			else
-				update(@data, { pk: pk, id: id })
-
-		else
-			console.log("ARRAY")
-			console.log(@data)
 
 
 
