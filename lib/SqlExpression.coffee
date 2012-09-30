@@ -17,61 +17,70 @@ class SqlExpression
 
 	getWhere: ->
 		return @whereClause
-
-	getValues: (wc) -> # NO! It isnt a toilet! z)
+	
+	getValues: (whereClause, whereKeys, whereValues) ->
 		self = @
-		if _.isArray(wc)
-			console.log("ARRAY")
-			console.log(wc)
-
+		if (_.isArray(whereClause))
 			if (operators.ARRAY.type is 'link')
 				link = operators.ARRAY.stmt
 
-			console.log(link)
-
-			for v in wc
+			for v in whereClause
 				if (_.isString(v))
 					if (v.substring(0,1) is '$')
-						console.log("OPERATOR #{v}")
-						console.log(operators[v])
+						where+=v
 
 				else
 					self.getValues(v)
 
-		else if _.isObject(wc)
-			console.log("OBJECT")
-			console.log(wc)
+		else if (_.isObject(whereClause))
 			if (operators.OBJECT.type is 'link')
 				link = operators.OBJECT.stmt
-				
-			console.log(link)
-
-			for v of wc
+			
+			for v of whereClause
 
 				if (_.isString(v))
 					if (v.substring(0,1) is '$')
-						console.log("OPERATOR #{v}")
-						console.log(operators[v])
+						w=v
 
-				else if (_.isObject(wc[v]) or _.isObject(wc[v]))
-					console.log(wc[v])
-					self.getValues(wc[v])
+				else if (_.isObject(whereClause[v]) or _.isObject(wc[v]))
+					self.getValues(whereClause[v])
 
 				else
-					console.error("OTHER #{wc[v]}")
+					console.error("OTHER #{whereClause[v]}")
 		else
-			console.error("OTHER wc")
+			console.error("OTHER #{whereClause}")
 
 	build: ->
 		self = @
-		wc = @whereClause 
+		wc = @whereClause
+		console.log(@whereClause) 
 		@getValues(@whereClause)
+
+###
+[ 
+	{ login: [ 'deividy', 'deeividy', 'itsme!' ] },
+	[ { id: 1, login: 'de' } ],
+	{ age: { '$gt': 20, '$lt': 30 } },
+	{ '$or': { name: 'Zachetti', login: 'tet' } },
+	{ name: 'Deividy Metheler Zachetti' } 
+]
+
+AND (login = 'deividy' OR login = 'deeividy' OR login = 'itsme!') 
+OR ( id = 1 AND login = 'de')
+AND (age > 20 AND age < 30)
+OR ( name = 'Zachetti' AND login = 'tet' )
+and ( name = 'Deividy Metheler Zachetti' )
+
+###
 
 sql = new SqlExpression('users')
 sql.where({ login: [ 'deividy', 'deeividy', 'itsme!'] })
 sql.where([ { id: 1, login: 'de' }])
 sql.where({ age: { $gt: 20, $lt: 30 } })
 sql.where({ $or: { name: 'Zachetti', login: "tet" } })
-sql.where([ $and: { name: 'Deividy Metheler Zachetti'} ])
+sql.where({ name: 'Deividy Metheler Zachetti'} )
 
 sql.build()
+
+
+

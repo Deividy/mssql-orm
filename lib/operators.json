@@ -1,46 +1,51 @@
 {
+	"DEFAULT": {
+		"expression": " $LINK$ ( $COLUMN$ $OP$ $VALUE$ ) ",
+		"link": "AND",
+		"op": "="
+	},
 	"OBJECT": {
-		"stmt": "AND",
-		"type": "link"
+		"type": "link",
+		"link": "AND"
 	},
 	"ARRAY": {
-		"stmt": "OR",
-		"type": "link"
+		"type": "link",
+		"link": "OR"
 	},
 	"$and": {
-		"stmt": "AND",
-		"type": "link"
+		"type": "link",
+		"link": "AND"
 	},
 	"$or": {
-		"stmt": "OR",
-		"type": "link"
+		"type": "link",
+		"link": "OR"
 	},
 	"$in": {
-		"stmt": "$LINK$ ($COLUMN$ IN ($VALUES$))",
-		"type": "expression"
+		"type": "expression",
+		"expression": "$COLUMN$ IN ($VALUES$)"		
 	},
 	"$gt": {
-		"stmt": "$LINK$ ( $COLUMN$ > '$VALUE$' )",
-		"type": "expression"
+		"type": "op",
+		"op": ">"
 	},
 	"$egt": {
-		"stmt": "$LINK$ ( $COLUMN$ >= '$VALUE$' )",
-		"type": "expression"
+		"type": "op",
+		"op": ">="
 	},
 	"$lt": {
-		"stmt": "$LINK$ ( $COLUMN$ < '$VALUE$' )",
-		"type": "expression"
+		"type": "op",
+		"op": "<"
 	},
 	"$elt": {
-		"stmt": "$LINK$ ( $COLUMN$ <= '$VALUE$' )",
-		"type": "expression"
+		"type": "op",
+		"op": "<="
 	},
 	"$like": {
-		"stmt": "$LINK$ ( $COLUMN$ LIKE '%$VALUE$%' )",
-		"type": "expression"
+		"type": "expression",
+		"expression": "$COLUMN$ LIKE '%$VALUE$%'"
 	},
 	"$between": {
-		"stmt": "$LINK$ ( $COLUMN BETWEEN '$VALUE[0]$' AND '$VALUE[1]$')",
-		"type": "expression"
+		"type": "expression",
+		"expression": "$COLUMN BETWEEN '$VALUE[0]$' AND '$VALUE[1]$'"
 	}
 }
