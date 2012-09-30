@@ -1,6 +1,6 @@
 {
 	"DEFAULT": {
-		"expression": " $LINK$ ( $COLUMN$ $OP$ $VALUE$ ) ",
+		"expression": "$COLUMN$ $OP$ $VALUE$",
 		"link": "AND",
 		"op": "="
 	},
