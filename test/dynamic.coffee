@@ -10,10 +10,13 @@ config = data[env].database.mssql
 
 dnm = new DynamicModels(config)
 dnm.makeModels((m) ->
+  m.Users.insertOne({ login: 'test', pass: 123 })
+
+
+  ###
   user = new m.Users()
 
   user.setLogin("test")
-  console.log(user.getLogin())
   user.save()
 
   data = {
@@ -26,4 +29,5 @@ dnm.makeModels((m) ->
 
   user = new m.Users([ data, { login: 'TestMan', pass: 'idontahave'} ])
   user.save()
+  ###
 )

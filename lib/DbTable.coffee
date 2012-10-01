@@ -1,16 +1,31 @@
-#SqlStatement = require('./SqlStatement')
+SqlStatement = require('./SqlStatement')
 
 class DbTable
+	@defaultHandler = {
+		success: (ret) ->
+			console.log(ret)
+		error: (err) ->
+			console.error(err)
+	}
+
 	constructor: (@data) ->
 		if(!@data) then @data = { }
 
-
 	@insertOne: (data, callback) ->
-	### @usage, something like that;
 		sql = new SqlStatement(@tableSchema)
-		stmt = sql.insert(data)
-		db.execute(stmt, callback)
-	###
+		stmt = sql.insertOne(data)
+
+		if(!callback) 
+			callback = @defaultHandler
+		else 
+			if (!callback.success)
+				callback.success = @defaultHandler.success
+			if (!callback.error)
+				callback.error = @defaultHandler.error
+
+		callback.success(stmt)
+
+		
 	@updateOne: (data, where, callback) ->
 
 	@deleteOne: (where, callback) ->
@@ -24,7 +39,7 @@ class DbTable
 	@updateMany: (data, where, callback) ->
 
 	save: ->
-
+		#console.log(@tableSchema)
 
 
 

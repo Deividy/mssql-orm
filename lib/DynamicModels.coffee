@@ -18,9 +18,15 @@ class DynamicModels extends DbSchema
 			for tableName, tableData of tables
 				# Create the model
 			    models[nConvetion(tableName)] = class extends DbTable
-			    	tableName: tableName
+			    	# For static methods
+			    	@tableName: tableName
+			    	@tableSchema: tableData
+
+			    	# For instance methods
+			    	tableName: tableName 
 			    	tableSchema: tableData
-			    
+
+			    # Getters and setters
 			    for column of tableData.columns
 			    	models[nConvetion(tableName)]::["get#{nConvetion(column)}"] = -> 
 			    		@data[column]

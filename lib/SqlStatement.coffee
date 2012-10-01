@@ -8,18 +8,37 @@ class SqlStatement
 
 	save: () ->
 
+	validate: (column, value) ->
+		return true
 
 	select: (w) ->
 		where = @getWhere(w)
 		columns = @getColumns()
 
-		return "SELECT #{columns} FROM .. #{where}"
+		return "SELECT #{columns} FROM  #{@tableSchema.name} #{where}"
 
-	insert: (data) ->
-		
+	insertOne: (data) ->
+		keys = ""
+		values = ""
+		count = 1
+		for key, val of data
+			if (count > 1)
+				keys += ", "
+				values += ", "
+
+			if (@validate(key, val))
+				keys += key
+				values += "'#{val}'"
+				count++
+			else
+				console.error("INVALID COLUMN / VALUE", key, val)
+				
+		ret = "INSERT INTO #{@tableSchema.name} (#{keys}) VALUES (#{values})"
+
+		return ret 
+
 	update: (data, w) ->
-		where = @getWhere(w)
-		
+
 	column: (c) ->
 		if (_.isArray(c))
 			for cl in c
@@ -55,13 +74,4 @@ class SqlStatement
 		else
 			return ""
 
-sql = new SqlStatement()
-sql.where({ login: [ 'deividy', 'deeividy', 'itsme!'], pass: '123' })
-sql.where([ { id: 1, login: 'de' }])
-sql.where({ age: { $gt: 20, $lt: 30 } })
-sql.where({ $or: { name: 'Zachetti', login: "tet" } })
-sql.where({ name: 'Deividy Metheler Zachetti'} )
-
-console.log(sql.select())
-
-
+module.exports = SqlStatement

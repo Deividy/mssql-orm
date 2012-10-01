@@ -1,7 +1,9 @@
 _ = require('underscore')
 fs = require('fs')
+path = require('path')
+repoDir = path.join(__dirname, '..')
 
-operators = JSON.parse(fs.readFileSync("./operators.json", "utf-8"))
+operators = JSON.parse(fs.readFileSync("#{repoDir}/lib/operators.json", "utf-8"))
 
 class SqlExpression
 	buildExpression: (exp, values) ->
