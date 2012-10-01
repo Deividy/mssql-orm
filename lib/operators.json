@@ -46,6 +46,6 @@
 	},
 	"$between": {
 		"type": "expression",
-		"expression": "$COLUMN BETWEEN '$VALUE[0]$' AND '$VALUE[1]$'"
+		"expression": "$COLUMN$ BETWEEN $VALUE[0]$ AND $VALUE[1]$"
 	}
 }

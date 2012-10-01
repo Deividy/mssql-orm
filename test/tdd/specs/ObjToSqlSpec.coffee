@@ -22,6 +22,8 @@ describe 'sql expression tests', ->
 			column: 	'login' 
 			value: 		'' 
 			values: 	[ 'deividy', 'de', 'itsme!' ] 
+			openClause: 1
+			closeClause: 0
 		}		
 		clauses.push(clause)
 
@@ -32,6 +34,8 @@ describe 'sql expression tests', ->
 			column: 	'pass' 
 			value: 		123 
 			values: 	[] 
+			openClause: 0
+			closeClause: 1
 		}		
 		clauses.push(clause)
 
@@ -49,6 +53,8 @@ describe 'sql expression tests', ->
 			column: 	'age' 
 			value: 		20
 			values: 	[] 
+			openClause: 1
+			closeClause: 0
 		}		
 		expected.push(clause)
 	
@@ -59,15 +65,17 @@ describe 'sql expression tests', ->
 			column: 	'age' 
 			value: 		30 
 			values: 	[] 
+			openClause: 0
+			closeClause: 1
 		}		
 		expected.push(clause)
 
 		expect(SqlExpression.jsonToClause(json)).toEqual(expected)
 
 	it 'should transform a json in a sql clause', ->
-		json = [ { login: [ 'deividy', 'dex', 'itsme!' ], pass: 123 }, { login: 'test' } ]
-		expect(SqlExpression.jsonToStmt(json)).toEqual(" OR ( ( login = 'deividy' ) OR ( login = 'dex' ) OR ( login = 'itsme!' )  AND ( pass = '123' ) ) OR ( login = 'test' ) ")
-###
+		json = [ { login: [ 'deividy', 'dex', 'itsme!' ], pass: 123, name: "Deividy" }, { login: 'test', name: 'Test' } ]
+		expect(SqlExpression.jsonToStmt(json)).toEqual(" OR ( (  ( login = 'deividy' ) OR ( login = 'dex' ) OR ( login = 'itsme!' ) ) AND  ( pass = '123' )  AND  ( name = 'Deividy' )  )  OR  (  ( login = 'test' )  AND  ( name = 'Test' )  ) ")
+
 	it 'should transform json into sql where clause', ->
 		data = [ 
 			{ login: [ 'deividy', 'deeividy', 'itsme!' ] }, # 0
@@ -76,6 +84,12 @@ describe 'sql expression tests', ->
 			{ '$or': { name: 'Zachetti', login: 'tet' } },  # 3
 			{ name: 'Deividy Metheler Zachetti' }           # 4 
 		]
-		expect(SqlExpression.build(data)).toEqual(" ( ( login = 'deividy' ) OR ( login = 'deeividy' ) OR ( login = 'itsme!' ) ) OR ( ( id = 1 ) AND ( login = 'de' ) ) AND ( age > 20 ) AND ( age < 30 ) OR ( ( name = 'Zachetti' ) AND ( login = 'tet' ) ) AND ( name = 'Deividy Metheler Zachetti' ) ")
+		expect(SqlExpression.build(data)).toEqual(" ( (  ( login = 'deividy' ) OR ( login = 'deeividy' ) OR ( login = 'itsme!' ) ) )  OR  (  ( id = '1' )  AND  ( login = 'de' )  )  AND  (  ( age > '20' )  AND  ( age < '30' )  )  OR  (  ( name = 'Zachetti' )  AND  ( login = 'tet' )  )  AND  (  ( name = 'Deividy Metheler Zachetti' )  ) ")
 
-###
+	it 'should transform a json with new operators into sql where clause', ->
+		data = [
+			{ age: { '$between': [20, 30] } }
+			{ id: { '$in': [1,2,3,4,5] } }
+		]
+		expect(SqlExpression.build(data)).toEqual("  (  ( age BETWEEN '20' AND '30' )  )  AND  (  ( id IN (1,2,3,4,5) )  ) ")
+
