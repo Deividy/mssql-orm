@@ -1,45 +1,45 @@
 SqlStatement = require('./SqlStatement')
 
 class DbTable
-	@defaultHandler = {
-		success: (ret) ->
-			console.log(ret)
-		error: (err) ->
-			console.error(err)
-	}
+    @defaultHandler = {
+        success: (ret) ->
+            console.log(ret)
+        error: (err) ->
+            console.error(err)
+    }
 
-	constructor: (@data) ->
-		if(!@data) then @data = { }
+    constructor: (@data) ->
+        if(!@data) then @data = { }
 
-	@insertOne: (data, callback) ->
-		sql = new SqlStatement(@tableSchema)
-		stmt = sql.insertOne(data)
+    @insertOne: (data, callback) ->
+        sql = new SqlStatement(@tableSchema)
+        stmt = sql.insertOne(data)
 
-		if(!callback) 
-			callback = @defaultHandler
-		else 
-			if (!callback.success)
-				callback.success = @defaultHandler.success
-			if (!callback.error)
-				callback.error = @defaultHandler.error
+        if(!callback) 
+            callback = @defaultHandler
+        else 
+            if (!callback.success)
+                callback.success = @defaultHandler.success
+            if (!callback.error)
+                callback.error = @defaultHandler.error
 
-		callback.success(stmt)
+        callback.success(stmt)
 
-		
-	@updateOne: (data, where, callback) ->
+        
+    @updateOne: (data, where, callback) ->
 
-	@deleteOne: (where, callback) ->
+    @deleteOne: (where, callback) ->
 
-	@findOne: (where, callback) ->
+    @findOne: (where, callback) ->
 
-	@findMany: (where, callback) ->
+    @findMany: (where, callback) ->
 
-	@deleteMany: (where, callback) ->
+    @deleteMany: (where, callback) ->
 
-	@updateMany: (data, where, callback) ->
+    @updateMany: (data, where, callback) ->
 
-	save: ->
-		#console.log(@tableSchema)
+    save: ->
+        #console.log(@tableSchema)
 
 
 
