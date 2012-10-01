@@ -6,13 +6,13 @@ class DbTable
 		if(!@data) then @data = { }
 
 
-	@insertOne: (where, callback) ->
+	@insertOne: (data, callback) ->
 	### @usage, something like that;
 		sql = new SqlStatement(@tableSchema)
-		stmt = sql.insert(where)
+		stmt = sql.insert(data)
 		db.execute(stmt, callback)
 	###
-	@updateOne: (where, callback) ->
+	@updateOne: (data, where, callback) ->
 
 	@deleteOne: (where, callback) ->
 
@@ -22,7 +22,7 @@ class DbTable
 
 	@deleteMany: (where, callback) ->
 
-	@updateMany: (where, callback) ->
+	@updateMany: (data, where, callback) ->
 
 	save: ->
 

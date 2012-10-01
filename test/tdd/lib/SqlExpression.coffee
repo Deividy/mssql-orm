@@ -24,7 +24,7 @@ AND ( (login = 'deividy') OR (login = 'deeividy') OR (login = 'itsme!') )
 			value: 		'' 
 			values: 	[ 'deividy', 'deeividy', 'itsme!' ] 
 		}
-				
+
 ###
 _ = require('underscore')
 fs = require('fs')
@@ -65,7 +65,6 @@ module.exports =
 		return c
 
 	jsonToClauses: (c, json) ->
-		self = @
 		clause = []
 		count = 1;
 		closeClause = 0
@@ -101,7 +100,7 @@ module.exports =
 						if (val.substring(0,1) isnt "$")
 							cl.column = val
 						else
-							cl = self.setOperator(operators, cl, val)
+							cl = @setOperator(operators, cl, val)
 					
 					if (_.isArray(json[v][val]))
 						cl.values = json[v][val] 
@@ -151,7 +150,6 @@ module.exports =
 		return clause
 
 	jsonToClause: (json, c) ->
-		self = @
 		clause = []
 		if (!c)
 			c =  {
@@ -166,7 +164,7 @@ module.exports =
 		if (_.isArray(json))
 			c.link = operators['ARRAY'].link
 			for j in json
-				cltemp = self.jsonToClauses(c, j)
+				cltemp = @jsonToClauses(c, j)
 				if (_.isArray(cltemp))
 					for clt in cltemp
 						if (_.isObject(clt))
@@ -174,14 +172,13 @@ module.exports =
 
 		else if (_.isObject(json))
 			c.link = operators['OBJECT'].link
-			clause = self.jsonToClauses(c, json)
+			clause = @jsonToClauses(c, json)
 
 				
 		return clause
 
 
 	clauseToStmt: (c) ->
-		self = @
 		stmt = ""		
 		if (_.isArray(c.values) and c.values.length >= 1 and c.expression is "$COLUMN$ $OP$ $VALUE$")
 			stmt += " #{c.link} ("
@@ -189,16 +186,15 @@ module.exports =
 			c.link = operators['ARRAY'].link
 			x=1
 			for v in c.values
-				exp = self.buildExpression(c.expression, { column: c.column, value: v, op: c.op, values: c.values })
+				exp = @buildExpression(c.expression, { column: c.column, value: v, op: c.op, values: c.values })
 				if (x>1) then stmt+= "#{c.link}"
 				stmt += " ( #{exp} ) "
 				x++
 			stmt += ")"
 			if (c.closeClause) then stmt += " ) "
 		else if (c.value or c.expression isnt "$COLUMN$ $OP$ $VALUE$")
-			
 			#c.link = operators['OBJECT'].link
-			exp = self.buildExpression(c.expression, { column: c.column, value: c.value, op: c.op, values: c.values })
+			exp = @buildExpression(c.expression, { column: c.column, value: c.value, op: c.op, values: c.values })
 			stmt += " #{c.link} "
 			if (c.openClause) then stmt += " ( "
 			stmt += " ( #{exp} ) "
@@ -209,25 +205,27 @@ module.exports =
 
 
 	jsonToStmt: (json, stmt) ->
-		self = @
 		if (!stmt) then where = ''
 		c = @jsonToClause(json)
 		if (_.isArray(c))
 			for data in c
 				if (_.isArray(data))
-					self.jsonToStmt(data, where)
+					@jsonToStmt(data, where)
 				else if (_.isObject(data))
-					where += self.clauseToStmt(data)
+					where += @clauseToStmt(data)
 		else if (_.isObject(c))
-			where += self.clauseToStmt(c)
+			where += @clauseToStmt(c)
 
 		return where
 
-	build: (data) ->
-		self = @		
+	build: (data) ->		
 		stmt = ""
 		if (_.isArray(data))
 			for json in data
-				stmt += self.jsonToStmt(json)
+				stmt += @jsonToStmt(json)
+		else if (_.isObject(data))
+			stmt += @jsonToStmt(data)
+		else
+			console.error("INVALID DATA", data)
 
 		return stmt.substring(4)

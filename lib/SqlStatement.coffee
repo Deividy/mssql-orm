@@ -1,42 +1,68 @@
+SqlExpression = require('./SqlExpression')
+_ = require('underscore')
+
 class SqlStatement
-	# SqlStatment knows everything about the table
 	constructor: (@tableSchema) ->
+		@whereClause = []
+		@columns = []
 
 	save: ->
-		###
-		self = @
-		id = 0
-		pk = ''
 
-		if (_.isObject(@data))
-			console.log("OBJECT")
-			if (self.data['id']) then id = self.data['id'] 
 
-			# Check keys
-			@tableSchema.uniques.forEach((uks)->
-				console.log("UKS")
-				console.log(uks)
-				console.log("---")
-				for col in uks.columns
-					if (self.data[col]) then id = self.data[col]
-					
-					pk = col
-			)
+	select: (w) ->
+		where = @getWhere(w)
+		columns = @getColumns()
 
-			if (!id)
-				@insert(@data)
-			else
-				@update(@data, { pk: pk, id: id })
+		return "SELECT #{columns} FROM .. #{where}"
 
+	insert: (data) ->
+		
+	update: (data, w) ->
+		where = @getWhere(w)
+		
+	column: (c) ->
+		if (_.isArray(c))
+			for cl in c
+				@columns.push(cl)
 		else
-			console.log("ARRAY")
-			console.log(@data)
-		###
+			@columns.push(c)
 
-	select: ->
+	where: (w) ->
+		@whereClause.push(w)
 
-	insert: ->
+	getColumns: ->
+		columns = ''
+		if (@columns.length >= 1)
+			count = 1
+			for c in @columns
+				if (count > 1) then columns += ", "
+				columns += c
+				count++
+		else
+			columns = "*"
 
-	update: ->
+		return columns
 
-	where: ->
+	getWhere: (w) ->
+		s = new SqlExpression()
+		if (w) 
+			v = s.build(w)
+		else
+			v = s.build(@whereClause)
+		
+		if (v)
+			return "where #{v}"
+		else
+			return ""
+
+sql = new SqlStatement()
+sql.where({ login: [ 'deividy', 'deeividy', 'itsme!'], pass: '123' })
+sql.where([ { id: 1, login: 'de' }])
+sql.where({ age: { $gt: 20, $lt: 30 } })
+sql.where({ $or: { name: 'Zachetti', login: "tet" } })
+sql.where({ name: 'Deividy Metheler Zachetti'} )
+
+console.log sql.select()
+
+
+

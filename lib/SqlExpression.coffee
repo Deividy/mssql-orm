@@ -4,83 +4,213 @@ fs = require('fs')
 operators = JSON.parse(fs.readFileSync("./operators.json", "utf-8"))
 
 class SqlExpression
-	# SqlExpression knows only the table name
-	constructor: (@table) ->
-		@whereClause = []
+	buildExpression: (exp, values) ->
+		vals = ''
 
-	where: (w) ->
-		@whereClause.push(w)
-	
-	order: (o) ->
+		exp = exp.replace("$COLUMN$", values.column)
+		exp = exp.replace("%$VALUE$%", "'%#{values.value}%'")
+		exp = exp.replace("$VALUE$", "'#{values.value}'")
+		exp = exp.replace("$OP$", values.op)
+		
+		if (values.values.length == 2)
+			exp = exp.replace("$VALUE[0]$", "'#{values.values[0]}'")
+			exp = exp.replace("$VALUE[1]$", "'#{values.values[1]}'")
 
-	limit: (l) ->
+		
+		if (values.values.length >= 1)
+			c = 1
+			for v in values.values
+				if (c>1) then vals += ','
+				vals += v 
+				c++
+			exp = exp.replace("$VALUES$",vals)
 
-	getWhere: ->
-		return @whereClause
-	
-	getValues: (whereClause, whereKeys, whereValues) ->
-		self = @
-		if (_.isArray(whereClause))
-			if (operators.ARRAY.type is 'link')
-				link = operators.ARRAY.stmt
+		return exp
 
-			for v in whereClause
-				if (_.isString(v))
-					if (v.substring(0,1) is '$')
-						where+=v
+	setOperator: (operators, c, v) ->
+		if (operators[v].type == "expression")				
+			c.expression = operators[v].expression
+		else if (operators[v].type == "op")
+			c.op = operators[v].op
+		else if (operators[v].type == "link")
+			c.link = operators[v].link
 
-				else
-					self.getValues(v)
+		return c
 
-		else if (_.isObject(whereClause))
-			if (operators.OBJECT.type is 'link')
-				link = operators.OBJECT.stmt
-			
-			for v of whereClause
+	jsonToClauses: (c, json) ->
+		clause = []
+		count = 1;
+		closeClause = 0
+		openClause = 0
+		cLink = c.link
 
-				if (_.isString(v))
-					if (v.substring(0,1) is '$')
-						w=v
+		for v of json
+			if (count == 1) 
+				openClause = 1
+			else
+				openClause = 0
 
-				else if (_.isObject(whereClause[v]) or _.isObject(wc[v]))
-					self.getValues(whereClause[v])
+			if (v.substring(0,1) == "$")
+				c = @setOperator(operators, c, v)
 
-				else
-					console.error("OTHER #{whereClause[v]}")
+			else
+				c.column = v
+
+			if (_.isArray(json[v]))	
+				c.values = json[v]
+
+			else if (_.isObject(json[v]))
+				dgo = 1
+				cl = c
+
+				for val of json[v]
+					if (count>1)
+						cl.link = operators["OBJECT"].link
+
+					if (!_.isString(val))
+						console.error("INVALID QUERY: ", val)
+					else
+						if (val.substring(0,1) != "$")
+							cl.column = val
+						else
+							cl = @setOperator(operators, cl, val)
+					
+					if (_.isArray(json[v][val]))
+						cl.values = json[v][val] 
+					else
+						cl.value = json[v][val]
+					
+					if (count == 1) 
+						openClause = 1
+					else
+						openClause = 0
+
+					clause.push( 
+						link: cl.link
+						op: cl.op
+						expression: cl.expression
+						column: cl.column
+						value: cl.value
+						values: cl.values
+						openClause: openClause
+						closeClause: closeClause 
+					)
+					count++
+			else
+				c.value = json[v]
+
+			if (!dgo)
+				clause.push( 
+					link: cLink
+					op: c.op
+					expression: c.expression
+					column: c.column
+					value: c.value
+					values: c.values 
+					openClause: openClause
+					closeClause: closeClause
+				)
+				c.value = ''
+				c.values = []
+				cLink = operators["OBJECT"].link
+
+			count++
+
+			dgo = 0
+		
+		clause[(clause.length-1)].closeClause = 1
+		return clause
+
+	jsonsToClause: (json, c) ->
+		clause = []
+		if (!c)
+			c =  {
+				link: 		operators['DEFAULT'].link
+				op: 		operators['DEFAULT'].op
+				expression:	operators['DEFAULT'].expression			
+				column: 	'' 
+				value: 		'' 
+				values: 	[] 
+			}		
+
+		if (_.isArray(json))
+			c.link = operators['ARRAY'].link
+			for j in json
+				cltemp = @jsonToClauses(c, j)
+				if (_.isArray(cltemp))
+					for clt in cltemp
+						if (_.isObject(clt))
+							clause.push(clt)
+
+		else if (_.isObject(json))
+			c.link = operators['OBJECT'].link
+			clause = @jsonToClauses(c, json)
+
+				
+		return clause
+
+
+	clauseToStmt: (c) ->
+		stmt = ""		
+		if (_.isArray(c.values) && c.values.length >= 1 && 
+									c.expression == "$COLUMN$ $OP$ $VALUE$")
+			stmt += " #{c.link} ("
+			if (c.openClause) then stmt += " ( "
+			c.link = operators['ARRAY'].link
+			x = 1
+			for v in c.values
+				exp = @buildExpression(c.expression, { 
+						column: c.column
+						value: v
+						op: c.op
+						values: c.values 
+				})
+				if (x>1) then stmt+= "#{c.link}"
+				stmt += " ( #{exp} ) "
+				x++
+			stmt += ")"
+			if (c.closeClause) then stmt += " ) "
+
+		else if (c.value || c.expression != "$COLUMN$ $OP$ $VALUE$")
+			exp = @buildExpression(c.expression, { 
+					column: c.column
+					value: c.value
+					op: c.op
+					values: c.values 
+			})
+			stmt += " #{c.link} "
+			if (c.openClause) then stmt += " ( "
+			stmt += " ( #{exp} ) "
+			if (c.closeClause) then stmt += " ) "
+			x++
+
+		return stmt
+
+	jsonToStmt: (json, stmt) ->
+		if (!stmt) then where = ''
+		c = @jsonsToClause(json)
+		if (_.isArray(c))
+			for data in c
+				if (_.isArray(data))
+					@jsonToStmt(data, where)
+				else if (_.isObject(data))
+					where += @clauseToStmt(data)
+		else if (_.isObject(c))
+			where += @clauseToStmt(c)
+
+		return where
+
+	build: (data) ->
+		stmt = ""
+		if (_.isArray(data))
+			for json in data
+				stmt += @jsonToStmt(json)
+		else if (_.isObject(data))
+			stmt += @jsonToStmt(data)
 		else
-			console.error("OTHER #{whereClause}")
+			console.error("INVALID DATA", data)
 
-	build: ->
-		self = @
-		wc = @whereClause
-		console.log(@whereClause) 
-		@getValues(@whereClause)
-
-###
-[ 
-	{ login: [ 'deividy', 'deeividy', 'itsme!' ] },
-	[ { id: 1, login: 'de' } ],
-	{ age: { '$gt': 20, '$lt': 30 } },
-	{ '$or': { name: 'Zachetti', login: 'tet' } },
-	{ name: 'Deividy Metheler Zachetti' } 
-]
-
-AND (login = 'deividy' OR login = 'deeividy' OR login = 'itsme!') 
-OR ( id = 1 AND login = 'de')
-AND (age > 20 AND age < 30)
-OR ( name = 'Zachetti' AND login = 'tet' )
-and ( name = 'Deividy Metheler Zachetti' )
-
-###
-
-sql = new SqlExpression('users')
-sql.where({ login: [ 'deividy', 'deeividy', 'itsme!'] })
-sql.where([ { id: 1, login: 'de' }])
-sql.where({ age: { $gt: 20, $lt: 30 } })
-sql.where({ $or: { name: 'Zachetti', login: "tet" } })
-sql.where({ name: 'Deividy Metheler Zachetti'} )
-
-sql.build()
+		return stmt.substring(4)
 
 
-
+module.exports = SqlExpression
