@@ -1,6 +1,5 @@
-SqlStatement = require('./SqlStatement')
+#SqlStatement = require('./SqlStatement')
 
-#DbTable just execute the queryes
 class DbTable
 	constructor: (@data) ->
 		if(!@data) then @data = { }

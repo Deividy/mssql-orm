@@ -6,7 +6,7 @@ class SqlStatement
 		@whereClause = []
 		@columns = []
 
-	save: ->
+	save: () ->
 
 
 	select: (w) ->
@@ -30,7 +30,7 @@ class SqlStatement
 	where: (w) ->
 		@whereClause.push(w)
 
-	getColumns: ->
+	getColumns: () ->
 		columns = ''
 		if (@columns.length >= 1)
 			count = 1
@@ -62,7 +62,6 @@ sql.where({ age: { $gt: 20, $lt: 30 } })
 sql.where({ $or: { name: 'Zachetti', login: "tet" } })
 sql.where({ name: 'Deividy Metheler Zachetti'} )
 
-console.log sql.select()
-
+console.log(sql.select())
 
 

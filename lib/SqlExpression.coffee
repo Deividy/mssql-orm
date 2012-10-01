@@ -149,7 +149,6 @@ class SqlExpression
 				
 		return clause
 
-
 	clauseToStmt: (c) ->
 		stmt = ""		
 		if (_.isArray(c.values) && c.values.length >= 1 && 
