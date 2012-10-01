@@ -36,6 +36,7 @@ module.exports =
 		vals = ''
 
 		exp = exp.replace("$COLUMN$", values.column)
+		exp = exp.replace("%$VALUE$%", "'%#{values.value}%'")
 		exp = exp.replace("$VALUE$", "'#{values.value}'")
 		exp = exp.replace("$OP$", values.op)
 		

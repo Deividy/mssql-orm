@@ -42,7 +42,7 @@
 	},
 	"$like": {
 		"type": "expression",
-		"expression": "$COLUMN$ LIKE '%$VALUE$%'"
+		"expression": "$COLUMN$ LIKE %$VALUE$%"
 	},
 	"$between": {
 		"type": "expression",
