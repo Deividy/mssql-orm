@@ -1,51 +1,51 @@
 {
-	"DEFAULT": {
-		"expression": "$COLUMN$ $OP$ $VALUE$",
-		"link": "AND",
-		"op": "="
-	},
-	"OBJECT": {
-		"type": "link",
-		"link": "AND"
-	},
-	"ARRAY": {
-		"type": "link",
-		"link": "OR"
-	},
-	"$and": {
-		"type": "link",
-		"link": "AND"
-	},
-	"$or": {
-		"type": "link",
-		"link": "OR"
-	},
-	"$in": {
-		"type": "expression",
-		"expression": "$COLUMN$ IN ($VALUES$)"		
-	},
-	"$gt": {
-		"type": "op",
-		"op": ">"
-	},
-	"$egt": {
-		"type": "op",
-		"op": ">="
-	},
-	"$lt": {
-		"type": "op",
-		"op": "<"
-	},
-	"$elt": {
-		"type": "op",
-		"op": "<="
-	},
-	"$like": {
-		"type": "expression",
-		"expression": "$COLUMN$ LIKE %$VALUE$%"
-	},
-	"$between": {
-		"type": "expression",
-		"expression": "$COLUMN$ BETWEEN $VALUE[0]$ AND $VALUE[1]$"
-	}
+    "DEFAULT": {
+        "expression": "$COLUMN$ $OP$ $VALUE$",
+        "link": "AND",
+        "op": "="
+    },
+    "OBJECT": {
+        "type": "link",
+        "link": "AND"
+    },
+    "ARRAY": {
+        "type": "link",
+        "link": "OR"
+    },
+    "$and": {
+        "type": "link",
+        "link": "AND"
+    },
+    "$or": {
+        "type": "link",
+        "link": "OR"
+    },
+    "$in": {
+        "type": "expression",
+        "expression": "$COLUMN$ IN ($VALUES$)"        
+    },
+    "$gt": {
+        "type": "op",
+        "op": ">"
+    },
+    "$egt": {
+        "type": "op",
+        "op": ">="
+    },
+    "$lt": {
+        "type": "op",
+        "op": "<"
+    },
+    "$elt": {
+        "type": "op",
+        "op": "<="
+    },
+    "$like": {
+        "type": "expression",
+        "expression": "$COLUMN$ LIKE %$VALUE$%"
+    },
+    "$between": {
+        "type": "expression",
+        "expression": "$COLUMN$ BETWEEN $VALUE[0]$ AND $VALUE[1]$"
+    }
 }
