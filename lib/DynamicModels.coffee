@@ -1,8 +1,8 @@
-DbTable = require('./DbTable')
 DbSchema = require('./DbSchema')
+DbTable = require('./DbTable')
 
 class DynamicModels extends DbSchema
-    nameConvention: (name) ->
+    _nameConvention = (name) ->
         # Up first char and format name
         upc = name.substring(0, 1)
         name = name.replace(upc, upc.toUpperCase());
@@ -10,7 +10,7 @@ class DynamicModels extends DbSchema
 
     makeModels: (callback) ->
         self = @
-        nConvetion = self.nameConvention
+        nConvetion = @_nameConvention
 
         @getDbTree((tree)->
             tables = tree.tables

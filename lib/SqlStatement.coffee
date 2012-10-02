@@ -1,14 +1,15 @@
-SqlExpression = require('./SqlExpression')
 _ = require('underscore')
+SqlExpression = require('./SqlExpression')
 
-class SqlStatement
+
+class SqlStatement extends SqlExpression
     constructor: (@tableSchema) ->
         @whereClause = []
         @columns = []
 
     save: () ->
 
-    validate: (column, value) ->
+    validate: (data) ->
         return true
 
     select: (w) ->
@@ -17,7 +18,10 @@ class SqlStatement
 
         return "SELECT #{columns} FROM  #{@tableSchema.name} #{where}"
 
-    insertOne: (data) ->
+    insert: (data) ->
+        if (!validate(data))
+            throw new Error("Invalid data! \n #{data}")
+
         keys = ""
         values = ""
         count = 1
@@ -26,13 +30,10 @@ class SqlStatement
                 keys += ", "
                 values += ", "
 
-            if (@validate(key, val))
-                keys += key
-                values += "'#{val}'"
-                count++
-            else
-                console.error("INVALID COLUMN / VALUE", key, val)
-                
+            keys += key
+            values += "'#{val}'"
+            count++
+
         ret = "INSERT INTO #{@tableSchema.name} (#{keys}) VALUES (#{values})"
 
         return ret 
@@ -63,12 +64,11 @@ class SqlStatement
         return columns
 
     getWhere: (w) ->
-        s = new SqlExpression()
         if (w) 
-            v = s.build(w)
+            v = @buildClauses(w)
         else
-            v = s.build(@whereClause)
-        
+            v = @buildClauses(@whereClause)
+
         if (v)
             return "where #{v}"
         else

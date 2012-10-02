@@ -3,7 +3,7 @@ tds = require('tds')
 class Database
     constructor: (@config) ->
 
-    connect: (callback) ->
+    _connect = (callback) ->
         self = @
         @conn = new tds.Connection(@config)
         @conn.connect((err) ->
@@ -22,7 +22,7 @@ class Database
         
     getRows: (stmt, callback) ->
         data = []
-        @connect((conn) ->
+        _connect((conn) ->
             stmt = conn.createStatement(stmt)
             stmt.on('row', (row) ->
                 data.push(row)

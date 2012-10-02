@@ -13,9 +13,9 @@ class DbTable
 
     @insertOne: (data, callback) ->
         sql = new SqlStatement(@tableSchema)
-        stmt = sql.insertOne(data)
+        stmt = sql.insert(data)
 
-        if(!callback) 
+        if(!callback)
             callback = @defaultHandler
         else 
             if (!callback.success)
@@ -24,7 +24,7 @@ class DbTable
                 callback.error = @defaultHandler.error
 
         callback.success(stmt)
-
+        
         
     @updateOne: (data, where, callback) ->
 
@@ -41,6 +41,5 @@ class DbTable
     save: ->
         #console.log(@tableSchema)
 
-
-
 module.exports = DbTable
+

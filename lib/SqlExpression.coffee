@@ -1,12 +1,10 @@
-_ = require('underscore')
 fs = require('fs')
-path = require('path')
-repoDir = path.join(__dirname, '..')
+_ = require('underscore')
 
-operators = JSON.parse(fs.readFileSync("#{repoDir}/lib/operators.json", "utf-8"))
+operators = JSON.parse(fs.readFileSync("#{__dirname}/operators.json", "utf-8"))
 
 class SqlExpression
-    buildExpression: (exp, values) ->
+    _buildExpression = (exp, values) ->
         vals = ''
 
         exp = exp.replace("$COLUMN$", values.column)
@@ -14,14 +12,10 @@ class SqlExpression
         exp = exp.replace("$VALUE$", "'#{values.value}'")
         exp = exp.replace("$OP$", values.op)
         
-        if (values.values.length == 2)
-            exp = exp.replace("$VALUE[0]$", "'#{values.values[0]}'")
-            exp = exp.replace("$VALUE[1]$", "'#{values.values[1]}'")
-
-        
         if (values.values.length >= 1)
             c = 1
             for v in values.values
+                exp = exp.replace("$VALUE[#{c}]$", "'#{v}'")
                 if (c>1) then vals += ','
                 vals += v 
                 c++
@@ -29,7 +23,7 @@ class SqlExpression
 
         return exp
 
-    setOperator: (operators, c, v) ->
+    _setOperator = (operators, c, v) ->
         if (operators[v].type == "expression")                
             c.expression = operators[v].expression
         else if (operators[v].type == "op")
@@ -38,8 +32,8 @@ class SqlExpression
             c.link = operators[v].link
 
         return c
-
-    jsonToClauses: (c, json) ->
+  
+    _jsonToClause = (c, json) ->
         clause = []
         count = 1;
         closeClause = 0
@@ -53,7 +47,7 @@ class SqlExpression
                 openClause = 0
 
             if (v.substring(0,1) == "$")
-                c = @setOperator(operators, c, v)
+                c = _setOperator(operators, c, v)
 
             else
                 c.column = v
@@ -70,12 +64,12 @@ class SqlExpression
                         cl.link = operators["OBJECT"].link
 
                     if (!_.isString(val))
-                        console.error("INVALID QUERY: ", val)
+                        throw new Error("Invalid query: \n #{val}")
                     else
                         if (val.substring(0,1) != "$")
                             cl.column = val
                         else
-                            cl = @setOperator(operators, cl, val)
+                            cl = _setOperator(operators, cl, val)
                     
                     if (_.isArray(json[v][val]))
                         cl.values = json[v][val] 
@@ -127,18 +121,18 @@ class SqlExpression
         clause = []
         if (!c)
             c =  {
-                link:         operators['DEFAULT'].link
-                op:         operators['DEFAULT'].op
-                expression:    operators['DEFAULT'].expression            
-                column:     '' 
-                value:         '' 
-                values:     [] 
+                link: operators['DEFAULT'].link
+                op: operators['DEFAULT'].op
+                expression: operators['DEFAULT'].expression            
+                column: '' 
+                value: '' 
+                values: [] 
             }        
 
         if (_.isArray(json))
             c.link = operators['ARRAY'].link
             for j in json
-                cltemp = @jsonToClauses(c, j)
+                cltemp = _jsonToClause(c, j)
                 if (_.isArray(cltemp))
                     for clt in cltemp
                         if (_.isObject(clt))
@@ -146,7 +140,7 @@ class SqlExpression
 
         else if (_.isObject(json))
             c.link = operators['OBJECT'].link
-            clause = @jsonToClauses(c, json)
+            clause = _jsonToClause(c, json)
 
                 
         return clause
@@ -156,33 +150,33 @@ class SqlExpression
         if (_.isArray(c.values) && c.values.length >= 1 && 
                                     c.expression == "$COLUMN$ $OP$ $VALUE$")
             stmt += " #{c.link} ("
-            if (c.openClause) then stmt += " ( "
+            if (c.openClause) then stmt += "("
             c.link = operators['ARRAY'].link
             x = 1
             for v in c.values
-                exp = @buildExpression(c.expression, { 
+                exp = _buildExpression(c.expression, { 
                         column: c.column
                         value: v
                         op: c.op
                         values: c.values 
                 })
-                if (x>1) then stmt+= "#{c.link}"
-                stmt += " ( #{exp} ) "
+                if (x>1) then stmt+= " #{c.link} "
+                stmt += "(#{exp})"
                 x++
             stmt += ")"
-            if (c.closeClause) then stmt += " ) "
+            if (c.closeClause) then stmt += ")"
 
         else if (c.value || c.expression != "$COLUMN$ $OP$ $VALUE$")
-            exp = @buildExpression(c.expression, { 
+            exp = _buildExpression(c.expression, { 
                     column: c.column
                     value: c.value
                     op: c.op
                     values: c.values 
             })
             stmt += " #{c.link} "
-            if (c.openClause) then stmt += " ( "
-            stmt += " ( #{exp} ) "
-            if (c.closeClause) then stmt += " ) "
+            if (c.openClause) then stmt += "("
+            stmt += "(#{exp})"
+            if (c.closeClause) then stmt += ")"
             x++
 
         return stmt
@@ -201,7 +195,7 @@ class SqlExpression
 
         return where
 
-    build: (data) ->
+    buildClauses: (data) ->
         stmt = ""
         if (_.isArray(data))
             for json in data
@@ -209,7 +203,7 @@ class SqlExpression
         else if (_.isObject(data))
             stmt += @jsonToStmt(data)
         else
-            console.error("INVALID DATA", data)
+            throw new Error("Invalid data on build! \n #{data}")
 
         return stmt.substring(4)
 
