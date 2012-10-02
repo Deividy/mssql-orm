@@ -17,14 +17,14 @@ class DbTable
 
         if(!callback)
             callback = @defaultHandler
-        else 
+        else
             if (!callback.success)
                 callback.success = @defaultHandler.success
             if (!callback.error)
                 callback.error = @defaultHandler.error
 
         callback.success(stmt)
-        
+
     @updateOne: (data, where, callback) ->
 
     @deleteOne: (where, callback) ->

@@ -23,14 +23,14 @@ class DynamicModels extends DbSchema
                     @tableSchema: tableData
 
                     # For instance methods
-                    tableName: tableName 
+                    tableName: tableName
                     tableSchema: tableData
 
                 # Getters and setters
                 for column of tableData.columns
-                    models[nConvetion(tableName)]::["get#{nConvetion(column)}"] = -> 
+                    models[nConvetion(tableName)]::["get#{nConvetion(column)}"] = ->
                         @data[column]
-                    models[nConvetion(tableName)]::["set#{nConvetion(column)}"] = (val) -> 
+                    models[nConvetion(tableName)]::["set#{nConvetion(column)}"] = (val) ->
                         @data[column] = val
 
             callback(models)

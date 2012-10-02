@@ -16,8 +16,8 @@ class DbSchema
 
     getConstraints: (tables, callback) ->
         self = @
-        @db.getRows("SELECT a.CONSTRAINT_NAME, a.TABLE_NAME, a.CONSTRAINT_TYPE, 
-            b.COLUMN_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a 
+        @db.getRows("SELECT a.CONSTRAINT_NAME, a.TABLE_NAME, a.CONSTRAINT_TYPE,
+            b.COLUMN_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS a
             LEFT JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE b on
             a.CONSTRAINT_NAME = b.CONSTRAINT_NAME", (data) ->
             fkeys = []
@@ -51,7 +51,7 @@ class DbSchema
 
                         uniques[tblName][colName].columns.push(column)
 
-                    when "FOREIGN KEY" 
+                    when "FOREIGN KEY"
                         if (!fkColumns[tblName])
                             fkColumns[tblName] = []
 
@@ -70,15 +70,16 @@ class DbSchema
                     keys.type = uniques[tbl][ck].type
 
                 tables[tbl].uniques.push(keys)
-            
+
             fkeys.forEach((fk) ->
-                self.db.getRows("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME, 
-                        b.CONSTRAINT_NAME, b.UNIQUE_CONSTRAINT_NAME, 
-                        b.UPDATE_RULE, b.DELETE_RULE FROM 
-                            INFORMATION_SCHEMA.TABLE_CONSTRAINTS a LEFT JOIN 
-                            INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS b 
+                # SHOULD: Replace it with a single query
+                self.db.getRows("SELECT a.CONSTRAINT_TYPE, a.TABLE_NAME,
+                        b.CONSTRAINT_NAME, b.UNIQUE_CONSTRAINT_NAME,
+                        b.UPDATE_RULE, b.DELETE_RULE FROM
+                            INFORMATION_SCHEMA.TABLE_CONSTRAINTS a LEFT JOIN
+                            INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS b
                                 on a.CONSTRAINT_NAME = b.UNIQUE_CONSTRAINT_NAME
- 
+
                         WHERE b.CONSTRAINT_NAME = '#{fk.fKey}'", (data) ->
 
                     data.forEach((item) ->
@@ -109,14 +110,14 @@ class DbSchema
         )
 
     getColumns: (tables, callback) ->
-        @db.getRows("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, 
-            COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, 
+        @db.getRows("SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION,
+            COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH,
             CHARACTER_OCTET_LENGTH FROM INFORMATION_SCHEMA.COLUMNS", (data) ->
             data.forEach((item) ->
                 tblName = item.getValue('TABLE_NAME')
                 colName = item.getValue('COLUMN_NAME')
 
-                tables[tblName]['columns'][colName] = { 
+                tables[tblName]['columns'][colName] = {
                      index: item.getValue('ORDINAL_POSITION')
                      default: item.getValue('COLUMN_DEFAULT')
                      isNull: item.getValue('IS_NULLABLE')
@@ -127,7 +128,7 @@ class DbSchema
             )
             callback(tables)
         )
-        
+
     buildDbTree: (callback) ->
         self = @
         dbTree = {}
@@ -137,7 +138,7 @@ class DbSchema
                 callback(dbTree)
             )
         )
-        
+
     getDbTree: (callback) ->
         @buildDbTree(callback)
 

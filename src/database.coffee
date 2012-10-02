@@ -7,7 +7,7 @@ class Database
         self = @
         @conn = new tds.Connection(@config)
         @conn.connect((err) ->
-            if (err) 
+            if (err)
                 console.error('Received error: ', err)
             else
                 self.conn.on('error', (error) ->
@@ -19,7 +19,7 @@ class Database
                 callback(self.conn)
         )
     query: (stmt, callback) ->
-        
+
     getRows: (stmt, callback) ->
         data = []
         @connect((conn) ->

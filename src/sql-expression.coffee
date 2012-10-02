@@ -14,20 +14,19 @@ class SqlExpression
         exp = exp.replace("%$VALUE$%", "'%#{values.value}%'")
         exp = exp.replace("$VALUE$", "'#{values.value}'")
         exp = exp.replace("$OP$", values.op)
-        
         if (values.values.length >= 1)
             c = 1
             for v in values.values
                 exp = exp.replace("$VALUE[#{(c-1)}]$", "'#{v}'")
                 if (c>1) then vals += ','
-                vals += v 
+                vals += v
                 c++
             exp = exp.replace("$VALUES$",vals)
 
         return exp
 
     _setOperator = (operators, c, v) ->
-        if (operators[v].type == "expression")                
+        if (operators[v].type == "expression")
             c.expression = operators[v].expression
         else if (operators[v].type == "op")
             c.op = operators[v].op
@@ -39,7 +38,6 @@ class SqlExpression
 
 
         return c
-  
     _jsonToClause = (c, json) ->
         clause = []
         count = 1;
@@ -49,7 +47,7 @@ class SqlExpression
 
         for v of json
 
-            if (count == 1) 
+            if (count == 1)
                 openClause = 1
             else
                 openClause = 0
@@ -57,14 +55,15 @@ class SqlExpression
             if (v.substring(0,1) == "$")
                 c = _setOperator(operators, c, v)
             else
-                c.expression = operators['DEFAULT'].expression  
+                c.expression = operators['DEFAULT'].expression
                 c.column = v
 
-            if (_.isArray(json[v]))    
+            if (_.isArray(json[v]))
                 c.values = json[v]
                 #cLink = operators['ARRAY'].link
 
             else if (_.isObject(json[v]))
+                cLink = "AND"
                 c.values = []
                 dgo = 1
                 cl = c
@@ -80,18 +79,18 @@ class SqlExpression
                             cl.column = val
                         else
                             cl = _setOperator(operators, cl, val)
-                    
+
                     if (_.isArray(json[v][val]))
-                        cl.values = json[v][val] 
+                        cl.values = json[v][val]
                     else
                         cl.value = json[v][val]
-                    
-                    if (count == 1) 
+
+                    if (count == 1)
                         openClause = 1
                     else
                         openClause = 0
 
-                    clause.push( 
+                    clause.push(
                         link: cl.link
                         op: cl.op
                         expression: cl.expression
@@ -99,8 +98,9 @@ class SqlExpression
                         value: cl.value
                         values: cl.values
                         openClause: openClause
-                        closeClause: closeClause 
+                        closeClause: closeClause
                     )
+
                     countc++
                     count++
             else
@@ -108,22 +108,23 @@ class SqlExpression
                 c.value = json[v]
 
             if (!dgo)
-                clause.push( 
+                clause.push(
                     link: cLink
                     op: c.op
                     expression: c.expression
                     column: c.column
                     value: c.value
-                    values: c.values 
+                    values: c.values
                     openClause: openClause
                     closeClause: closeClause
                 )
+                #console.log(c)
                 cLink = operators["OBJECT"].link
 
             count++
 
             dgo = 0
-        
+
         clause[(clause.length-1)].closeClause = 1
         return clause
 
@@ -131,11 +132,11 @@ class SqlExpression
         c =  {
             link: operators['DEFAULT'].link
             op: operators['DEFAULT'].op
-            expression: operators['DEFAULT'].expression            
-            column: '' 
-            value: '' 
-            values: [] 
-        }      
+            expression: operators['DEFAULT'].expression
+            column: ''
+            value: ''
+            values: []
+        }
         return c
 
     jsonsToClause: (json, c) ->
@@ -164,24 +165,24 @@ class SqlExpression
                 _cLink = c.link
             clause = _jsonToClause(c, json)
 
-       
+
         return clause
 
     clauseToStmt: (c) ->
-        stmt = ""        
+        stmt = ""
 
-        if (_.isArray(c.values) && c.values.length >= 1 && 
+        if (_.isArray(c.values) && c.values.length >= 1 &&
                                     c.expression == "$COLUMN$ $OP$ $VALUE$")
             stmt += " #{c.link} ("
             if (c.openClause) then stmt += "("
             c.link = operators['ARRAY'].link
             x = 1
             for v in c.values
-                exp = _buildExpression(c.expression, { 
+                exp = _buildExpression(c.expression, {
                         column: c.column
                         value: v
                         op: c.op
-                        values: c.values 
+                        values: c.values
                 })
                 if (x>1) then stmt+= " #{c.link} "
                 stmt += "(#{exp})"
@@ -190,11 +191,11 @@ class SqlExpression
             if (c.closeClause) then stmt += ")"
 
         else if (c.value || c.expression != "$COLUMN$ $OP$ $VALUE$")
-            exp = _buildExpression(c.expression, { 
+            exp = _buildExpression(c.expression, {
                     column: c.column
                     value: c.value
                     op: c.op
-                    values: c.values 
+                    values: c.values
             })
             stmt += " #{c.link} "
             if (c.openClause) then stmt += "("

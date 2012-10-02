@@ -2,15 +2,13 @@ _ = require('underscore')
 SqlExpression = require('./sql-expression')
 
 
-class SqlStatement extends SqlExpression
+class SqlStatement
     constructor: (@tableSchema) ->
         @whereClause = []
         @columns = []
 
     save: () ->
 
-    validate: (data) ->
-        return true
 
     select: (w) ->
         where = @getWhere(w)
@@ -19,9 +17,6 @@ class SqlStatement extends SqlExpression
         return "SELECT #{columns} FROM  #{@tableSchema.name} #{where}"
 
     insert: (data) ->
-        if (!@validate(data))
-            throw new Error("Invalid data! \n #{data}")
-
         keys = ""
         values = ""
         count = 1
@@ -36,7 +31,7 @@ class SqlStatement extends SqlExpression
 
         ret = "INSERT INTO #{@tableSchema.name} (#{keys}) VALUES (#{values})"
 
-        return ret 
+        return ret
 
     update: (data, w) ->
 
@@ -64,10 +59,11 @@ class SqlStatement extends SqlExpression
         return columns
 
     getWhere: (w) ->
-        if (w) 
-            v = @buildClauses(w)
+        sql = new SqlExpression()
+        if (w)
+            v = sql.buildClauses(w)
         else
-            v = @buildClauses(@whereClause)
+            v = sql.buildClauses(@whereClause)
 
         if (v)
             return "where #{v}"
