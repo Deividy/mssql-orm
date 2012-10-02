@@ -4,6 +4,8 @@ _ = require('underscore')
 operators = JSON.parse(fs.readFileSync("#{__dirname}/operators.json", "utf-8"))
 
 class SqlExpression
+    _cLink = ""
+
     _buildExpression = (exp, values) ->
         vals = ''
 
@@ -15,7 +17,7 @@ class SqlExpression
         if (values.values.length >= 1)
             c = 1
             for v in values.values
-                exp = exp.replace("$VALUE[#{c}]$", "'#{v}'")
+                exp = exp.replace("$VALUE[#{(c-1)}]$", "'#{v}'")
                 if (c>1) then vals += ','
                 vals += v 
                 c++
@@ -28,8 +30,11 @@ class SqlExpression
             c.expression = operators[v].expression
         else if (operators[v].type == "op")
             c.op = operators[v].op
+            c.expression = operators['DEFAULT'].expression
+
         else if (operators[v].type == "link")
             c.link = operators[v].link
+            c.expression = operators['DEFAULT'].expression
 
         return c
   
@@ -48,14 +53,16 @@ class SqlExpression
 
             if (v.substring(0,1) == "$")
                 c = _setOperator(operators, c, v)
-
             else
+                c.expression = operators['DEFAULT'].expression  
                 c.column = v
 
             if (_.isArray(json[v]))    
                 c.values = json[v]
+                cLink = operators['ARRAY'].link
 
             else if (_.isObject(json[v]))
+                c.values = []
                 dgo = 1
                 cl = c
 
@@ -91,8 +98,10 @@ class SqlExpression
                         openClause: openClause
                         closeClause: closeClause 
                     )
+
                     count++
             else
+                c.values = []
                 c.value = json[v]
 
             if (!dgo)
@@ -106,8 +115,7 @@ class SqlExpression
                     openClause: openClause
                     closeClause: closeClause
                 )
-                c.value = ''
-                c.values = []
+                #console.log(c)
                 cLink = operators["OBJECT"].link
 
             count++
@@ -117,29 +125,38 @@ class SqlExpression
         clause[(clause.length-1)].closeClause = 1
         return clause
 
+    _clauseTemplate = () ->
+        c =  {
+            link: operators['DEFAULT'].link
+            op: operators['DEFAULT'].op
+            expression: operators['DEFAULT'].expression            
+            column: '' 
+            value: '' 
+            values: [] 
+        }      
+        return c
+
     jsonsToClause: (json, c) ->
         clause = []
         if (!c)
-            c =  {
-                link: operators['DEFAULT'].link
-                op: operators['DEFAULT'].op
-                expression: operators['DEFAULT'].expression            
-                column: '' 
-                value: '' 
-                values: [] 
-            }        
+            c = _clauseTemplate()
 
         if (_.isArray(json))
             c.link = operators['ARRAY'].link
+            _cLink = c.link
+
             for j in json
+                c.link = _cLink
                 cltemp = _jsonToClause(c, j)
                 if (_.isArray(cltemp))
+
                     for clt in cltemp
                         if (_.isObject(clt))
                             clause.push(clt)
 
         else if (_.isObject(json))
             c.link = operators['OBJECT'].link
+            _cLink = c.link
             clause = _jsonToClause(c, json)
 
                 

@@ -25,7 +25,6 @@ class DbTable
 
         callback.success(stmt)
         
-        
     @updateOne: (data, where, callback) ->
 
     @deleteOne: (where, callback) ->
