@@ -19,7 +19,7 @@ class SqlStatement extends SqlExpression
         return "SELECT #{columns} FROM  #{@tableSchema.name} #{where}"
 
     insert: (data) ->
-        if (!validate(data))
+        if (!@validate(data))
             throw new Error("Invalid data! \n #{data}")
 
         keys = ""

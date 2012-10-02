@@ -10,7 +10,7 @@ class DynamicModels extends DbSchema
 
     makeModels: (callback) ->
         self = @
-        nConvetion = @_nameConvention
+        nConvetion = _nameConvention
 
         @getDbTree((tree)->
             tables = tree.tables
