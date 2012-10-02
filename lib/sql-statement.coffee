@@ -1,5 +1,5 @@
 _ = require('underscore')
-SqlExpression = require('./SqlExpression')
+SqlExpression = require('./sql-expression')
 
 
 class SqlStatement extends SqlExpression

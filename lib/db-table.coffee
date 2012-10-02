@@ -1,4 +1,4 @@
-SqlStatement = require('./SqlStatement')
+SqlStatement = require('./sql-statement')
 
 class DbTable
     @defaultHandler = {

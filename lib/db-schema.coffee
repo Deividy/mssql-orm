@@ -1,4 +1,4 @@
-Database = require("./Database")
+Database = require("./database")
 
 class DbSchema
 

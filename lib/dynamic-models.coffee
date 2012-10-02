@@ -1,5 +1,5 @@
-DbSchema = require('./DbSchema')
-DbTable = require('./DbTable')
+DbSchema = require('./db-schema')
+DbTable = require('./db-table')
 
 class DynamicModels extends DbSchema
     _nameConvention = (name) ->
