@@ -3,6 +3,7 @@ _ = require('underscore')
 
 operators = JSON.parse(fs.readFileSync("#{__dirname}/operators.json", "utf-8"))
 
+# MUST: Need refactor
 class SqlExpression
     _cLink = ""
 
@@ -36,6 +37,7 @@ class SqlExpression
             c.link = operators[v].link
             c.expression = operators['DEFAULT'].expression
 
+
         return c
   
     _jsonToClause = (c, json) ->
@@ -46,6 +48,7 @@ class SqlExpression
         cLink = c.link
 
         for v of json
+
             if (count == 1) 
                 openClause = 1
             else
@@ -59,15 +62,15 @@ class SqlExpression
 
             if (_.isArray(json[v]))    
                 c.values = json[v]
-                cLink = operators['ARRAY'].link
+                #cLink = operators['ARRAY'].link
 
             else if (_.isObject(json[v]))
                 c.values = []
                 dgo = 1
                 cl = c
-
+                countc = 1
                 for val of json[v]
-                    if (count>1)
+                    if (countc>1)
                         cl.link = operators["OBJECT"].link
 
                     if (!_.isString(val))
@@ -98,7 +101,7 @@ class SqlExpression
                         openClause: openClause
                         closeClause: closeClause 
                     )
-
+                    countc++
                     count++
             else
                 c.values = []
@@ -115,7 +118,6 @@ class SqlExpression
                     openClause: openClause
                     closeClause: closeClause
                 )
-                #console.log(c)
                 cLink = operators["OBJECT"].link
 
             count++
@@ -143,10 +145,12 @@ class SqlExpression
 
         if (_.isArray(json))
             c.link = operators['ARRAY'].link
-            _cLink = c.link
+            if (!_cLink)
+                _cLink = c.link
 
             for j in json
                 c.link = _cLink
+
                 cltemp = _jsonToClause(c, j)
                 if (_.isArray(cltemp))
 
@@ -156,14 +160,16 @@ class SqlExpression
 
         else if (_.isObject(json))
             c.link = operators['OBJECT'].link
-            _cLink = c.link
+            if (!_cLink)
+                _cLink = c.link
             clause = _jsonToClause(c, json)
 
-                
+       
         return clause
 
     clauseToStmt: (c) ->
         stmt = ""        
+
         if (_.isArray(c.values) && c.values.length >= 1 && 
                                     c.expression == "$COLUMN$ $OP$ $VALUE$")
             stmt += " #{c.link} ("
