@@ -1,4 +1,7 @@
 _ = require('underscore')
+SqlFormatter = require('./sql-formatter')
+
+format = SqlFormatter.f
 
 class SqlExpression
     constructor: () ->
@@ -9,17 +12,13 @@ class SqlExpression
         for k, v of op
             if (k == 'between')
                 if (_.isArray(v) and v.length==2)
-                    if (_.isString(v[0])) then value = "'#{v[0]}'"
-                    if (_.isString(v[1])) then value = "'#{v[1]}'"
-
-                    clauses.push("#{key} BETWEEN #{v[0]} AND #{v[1]}")
+                    clauses.push("#{key} BETWEEN #{format(v[0])} AND #{format(v[1])}")
 
                 else
                     throw new Error("Invalid between clause")
 
             else if (!_.isArray(v) && !_.isObject(v))
-                if (_.isString(v)) then value = "'#{v}'"
-                clauses.push("#{key} #{k} #{v}")
+                clauses.push("#{key} #{k} #{format(v)}")
 
             else
                 throw new Error("Not suported arrays or objects inside an object")
@@ -32,19 +31,16 @@ class SqlExpression
 
             if(_.isArray(value))
                 values = _.reduce(value, (memo, val) ->
-                    if (_.isString(val)) then val = "'#{val}'"
-
-                    return "#{memo}, #{val}"
+                    return "#{memo}, #{format(val)}"
                 )
                 clauses.push("#{key} IN (#{values})")
 
             else if (_.isObject(value))
                 clauses.push(@sqlFromOperator(key, value))
             else
-                if (_.isString(value)) then value = "'#{value}'"
-                clauses.push("#{key} = #{value}")
+                clauses.push("#{key} = #{format(value)}")
 
-        newClause = clauses.join(' AND ')
+        newClause = "(#{clauses.join(' AND ')})"
 
         return newClause
 
@@ -52,12 +48,12 @@ class SqlExpression
         clauses = []
         for a in arr
             if (_.isObject(a))
-                clauses.push("(#{@sqlFromObject(a)})")
+                clauses.push(@sqlFromObject(a))
             else
                 throw new Error("Invalid clause, a where array can contains only objects")
         return "(#{clauses.join(' OR ')})"
 
-    whereHandler: (w, conector) ->
+    addClause: (w, conector) ->
         if (_.isArray(w))
             newClause = @sqlFromArray(w)
         else if (_.isObject(w))
@@ -65,30 +61,26 @@ class SqlExpression
         else
             newClause = w
 
-        if (@whereClause != "")
-            if (@whereClause[0] != '(' && @whereClause[(@whereClause.length-1)] != ')')
-                @whereClause = "(#{@whereClause})"
+        if (!@whereClause)
+            @whereClause = newClause
+            return
 
-            if (newClause[0] != '(' && newClause[(newClause.length-1)] != ')')
-                newClause = "(#{newClause})"
+        @whereClause = "(#{@whereClause} #{conector} #{newClause})"
 
-            @whereClause = "#{@whereClause} #{conector} #{newClause}"
-        else
-            @whereClause = "#{newClause}"
 
     where: (w) ->
         if (@whereClause)
             throw new Error("Already use the .where, check your code")
 
-        @whereHandler(w)
+        @addClause(w)
         return @
 
     and: (w) ->
-        @whereHandler(w, "AND")
+        @addClause(w, "AND")
         return @
 
     or: (w) ->
-        @whereHandler(w, "OR")
+        @addClause(w, "OR")
         return @
 
     getWhere: () ->

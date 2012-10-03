@@ -6,8 +6,8 @@ describe('tests with sql-expression', () ->
         sql.where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
 
-        exp = "where (age = 22 AND name = 'deividy')"
-        exp += " AND (test = 123 AND testing = 1234)"
+        exp = "where ((age = 22 AND name = 'deividy')"
+        exp += " AND (test = 123 AND testing = 1234))"
 
 
         expect(sql.getWhere()).toEqual(exp)
@@ -19,8 +19,9 @@ describe('tests with sql-expression', () ->
                 .or({ test: 123, testing: 1234 })
                 .and({ login: 'root'})
 
-        exp = "where (age = 22 AND name = 'deividy') OR (test = 123 AND testing = 1234)"
-        exp += " AND (login = 'root')"
+        exp = "where (((age = 22 AND name = 'deividy') OR (test = 123 AND testing = 1234))"
+        exp += " AND (login = 'root'))"
+
 
         expect(sql.getWhere()).toEqual(exp)
     )
@@ -29,7 +30,7 @@ describe('tests with sql-expression', () ->
         sql = new SqlExpression()
 
         sql.where({ age: [22, 30, 40] , name: 'deividy' })
-        exp = "where age IN (22, 30, 40) AND name = 'deividy'"
+        exp = "where (age IN (22, 30, 40) AND name = 'deividy')"
 
         expect(sql.getWhere()).toEqual(exp)
     )
@@ -38,7 +39,7 @@ describe('tests with sql-expression', () ->
         sql = new SqlExpression()
 
         sql.where({ age: { '>=': 18 } , name: 'deividy' })
-        exp = "where age >= 18 AND name = 'deividy'"
+        exp = "where (age >= 18 AND name = 'deividy')"
 
         expect(sql.getWhere()).toEqual(exp)
     )
@@ -47,7 +48,7 @@ describe('tests with sql-expression', () ->
         sql = new SqlExpression()
 
         sql.where({ age: { 'between': [18, 23] } , name: 'deividy' })
-        exp = "where age BETWEEN 18 AND 23 AND name = 'deividy'"
+        exp = "where (age BETWEEN 18 AND 23 AND name = 'deividy')"
 
         expect(sql.getWhere()).toEqual(exp)
     )
@@ -58,9 +59,9 @@ describe('tests with sql-expression', () ->
                 .or({ test: { "between": [18,25] }, testing: 1234 })
                 .and({ login: 'root'})
 
-        exp = "where (age > 18 AND age < 25 AND name = 'deividy') "
-        exp += "OR (test BETWEEN 18 AND 25 AND testing = 1234) "
-        exp += "AND (login = 'root')"
+        exp = "where (((age > 18 AND age < 25 AND name = 'deividy') "
+        exp += "OR (test BETWEEN 18 AND 25 AND testing = 1234)) "
+        exp += "AND (login = 'root'))"
 
         expect(sql.getWhere()).toEqual(exp)
     )
@@ -80,8 +81,36 @@ describe('tests with sql-expression', () ->
         sql.where([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
             .and([{ login: 'test', pass: 12 }, { login: 'test123', pass: 123 } ])
 
-        exp = "where ((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
-        exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123))"
+        exp = "where (((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
+        exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123)))"
         expect(sql.getWhere()).toEqual(exp)
     )
+
+    it("should return a where clause with sql query", () ->
+        sql = new SqlExpression()
+        sql.where("id = 1 AND test = 2")
+            .and({ name: 'test' })
+
+        exp = "where (id = 1 AND test = 2 AND (name = 'test'))"
+        expect(sql.getWhere()).toEqual(exp)
+    )
+
+    it("should return a where clause with sql query with or", () ->
+        sql = new SqlExpression()
+        sql.where("id = 1 AND test = 2")
+            .and({ name: 'test' })
+            .or("login = 'test'")
+
+        exp = "where ((id = 1 AND test = 2 AND (name = 'test')) OR login = 'test')"
+        expect(sql.getWhere()).toEqual(exp)
+    )
+
+    it("should bum!", () ->
+        sql = new SqlExpression()
+        sql.where({ login: "HAX0R '-- SELECT * FROM users" })
+
+        exp = "where (login = 'HAX0R ''-- SELECT * FROM users')"
+        expect(sql.getWhere()).toEqual(exp)
+    )
+
 )

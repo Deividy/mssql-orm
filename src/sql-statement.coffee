@@ -1,32 +1,29 @@
 _ = require('underscore')
 SqlExpression = require('./sql-expression')
 
-
+sql = new SqlExpression()
 class SqlStatement
     constructor: (@table) ->
         @columns = []
-        @sql = new SqlExpression()
 
     # SqlExpression functions
     where: (w) ->
-        @sql.where(w)
+        sql.where(w)
         return @
     and: (w) ->
-        @sql.and(w)
+        sql.and(w)
         return @
     or: (w) ->
-        @sql.or(w)
+        sql.or(w)
         return @
 
-    save: () ->
-
-    select: (w) ->
-        select = "SELECT #{@getColumns()} FROM #{@table} #{@sql.getWhere()}"
+    getSelect: (w) ->
+        select = "SELECT #{@getColumns()} FROM #{@table} #{sql.getWhere()}"
         return select
 
-    insert: (data) ->
+    getInsert: (data) ->
 
-    update: (data, w) ->
+    getUpdate: (data, w) ->
 
     column: (c) ->
         if (_.isArray(c))
@@ -34,7 +31,6 @@ class SqlStatement
                 @columns.push(cl)
         else
             @columns.push(c)
-
 
     getColumns: () ->
         columns = ''

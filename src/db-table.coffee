@@ -12,7 +12,7 @@ class DbTable
         if(!@data) then @data = { }
 
     @insertOne: (data, callback) ->
-        sql = new SqlStatement(@tableSchema)
+        sql = new SqlStatement(@tableSchema.name)
         stmt = sql.insert(data)
 
         if(!callback)
