@@ -1,7 +1,7 @@
 SqlExpression = require('../src/sql-expression')
 
 describe('tests with sql-expression', () ->
-    it('should return a simple where clause', () ->
+    it('handles two objects ANDed', () ->
         sql = new SqlExpression()
         sql.where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
@@ -13,7 +13,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a where clause with or', () ->
+    it('accepts where(object) followed by .or(object) then .and(object)', () ->
         sql = new SqlExpression()
         sql.where({ age: 22, name: 'deividy' })
                 .or({ test: 123, testing: 1234 })
@@ -26,7 +26,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a where clause with in, using a array', () ->
+    it('transforms JS array for column values into SQL IN operator', () ->
         sql = new SqlExpression()
 
         sql.where({ age: [22, 30, 40] , name: 'deividy' })
@@ -35,7 +35,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a where clause using a opertor', () ->
+    it('supports ad-hoc SQL operators like >=', () ->
         sql = new SqlExpression()
 
         sql.where({ age: { '>=': 18 } , name: 'deividy' })
@@ -44,7 +44,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a where clause with between', () ->
+    it('supports SQL BETWEEN operator', () ->
         sql = new SqlExpression()
 
         sql.where({ age: { 'between': [18, 23] } , name: 'deividy' })
@@ -53,7 +53,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a complex where clause with operators and or conections', () ->
+    it('supports multiple operators for a single column, plus .or() and .and()', () ->
         sql = new SqlExpression()
         sql.where({ age: { ">": 18, "<": 25 }, name: 'deividy' })
                 .or({ test: { "between": [18,25] }, testing: 1234 })
@@ -66,7 +66,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a where clause with or using arrays', () ->
+    it('ORs conditions passed in an array', () ->
         sql = new SqlExpression()
 
         sql.where([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
@@ -75,7 +75,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it('should return a complex where clause', () ->
+    it('can AND together two OR groups, and use parens appropriately', () ->
         sql = new SqlExpression()
 
         sql.where([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
@@ -86,7 +86,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it("should return a where clause with sql query", () ->
+    it('accepts raw SQL and can .and() it with another clause', () ->
         sql = new SqlExpression()
         sql.where("id = 1 AND test = 2")
             .and({ name: 'test' })
@@ -95,7 +95,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it("should return a where clause with sql query with or", () ->
+    it('accepts raw SQL followed by .and() then .or()', () ->
         sql = new SqlExpression()
         sql.where("id = 1 AND test = 2")
             .and({ name: 'test' })
@@ -105,7 +105,7 @@ describe('tests with sql-expression', () ->
         expect(sql.getWhere()).toEqual(exp)
     )
 
-    it("should bum!", () ->
+    it('protects against SQL injections', () ->
         sql = new SqlExpression()
         sql.where({ login: "HAX0R '-- SELECT * FROM users" })
 
