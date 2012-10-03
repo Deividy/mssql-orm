@@ -1,235 +1,100 @@
-fs = require('fs')
 _ = require('underscore')
 
-operators = JSON.parse(fs.readFileSync("#{__dirname}/operators.json", "utf-8"))
-
-# MUST: Need refactor
 class SqlExpression
-    _cLink = ""
+    constructor: () ->
+        @whereClause = ""
 
-    _buildExpression = (exp, values) ->
-        vals = ''
+    sqlFromOperator: (key, op) ->
+        clauses = []
+        for k, v of op
+            if (k == 'between')
+                if (_.isArray(v) and v.length==2)
+                    if (_.isString(v[0])) then value = "'#{v[0]}'"
+                    if (_.isString(v[1])) then value = "'#{v[1]}'"
 
-        exp = exp.replace("$COLUMN$", values.column)
-        exp = exp.replace("%$VALUE$%", "'%#{values.value}%'")
-        exp = exp.replace("$VALUE$", "'#{values.value}'")
-        exp = exp.replace("$OP$", values.op)
-        if (values.values.length >= 1)
-            c = 1
-            for v in values.values
-                exp = exp.replace("$VALUE[#{(c-1)}]$", "'#{v}'")
-                if (c>1) then vals += ','
-                vals += v
-                c++
-            exp = exp.replace("$VALUES$",vals)
+                    clauses.push("#{key} BETWEEN #{v[0]} AND #{v[1]}")
 
-        return exp
+                else
+                    throw new Error("Invalid between clause")
 
-    _setOperator = (operators, c, v) ->
-        if (operators[v].type == "expression")
-            c.expression = operators[v].expression
-        else if (operators[v].type == "op")
-            c.op = operators[v].op
-            c.expression = operators['DEFAULT'].expression
+            else if (!_.isArray(v) && !_.isObject(v))
+                if (_.isString(v)) then value = "'#{v}'"
+                clauses.push("#{key} #{k} #{v}")
 
-        else if (operators[v].type == "link")
-            c.link = operators[v].link
-            c.expression = operators['DEFAULT'].expression
-
-
-        return c
-    _jsonToClause = (c, json) ->
-        clause = []
-        count = 1;
-        closeClause = 0
-        openClause = 0
-        cLink = c.link
-
-        for v of json
-
-            if (count == 1)
-                openClause = 1
             else
-                openClause = 0
+                throw new Error("Not suported arrays or objects inside an object")
 
-            if (v.substring(0,1) == "$")
-                c = _setOperator(operators, c, v)
-            else
-                c.expression = operators['DEFAULT'].expression
-                c.column = v
+        return clauses.join(" AND ")
 
-            if (_.isArray(json[v]))
-                c.values = json[v]
-                #cLink = operators['ARRAY'].link
+    sqlFromObject: (obj) ->
+        clauses = []
+        for key, value of obj
 
-            else if (_.isObject(json[v]))
-                cLink = "AND"
-                c.values = []
-                dgo = 1
-                cl = c
-                countc = 1
-                for val of json[v]
-                    if (countc>1)
-                        cl.link = operators["OBJECT"].link
+            if(_.isArray(value))
+                values = _.reduce(value, (memo, val) ->
+                    if (_.isString(val)) then val = "'#{val}'"
 
-                    if (!_.isString(val))
-                        throw new Error("Invalid query: \n #{val}")
-                    else
-                        if (val.substring(0,1) != "$")
-                            cl.column = val
-                        else
-                            cl = _setOperator(operators, cl, val)
-
-                    if (_.isArray(json[v][val]))
-                        cl.values = json[v][val]
-                    else
-                        cl.value = json[v][val]
-
-                    if (count == 1)
-                        openClause = 1
-                    else
-                        openClause = 0
-
-                    clause.push(
-                        link: cl.link
-                        op: cl.op
-                        expression: cl.expression
-                        column: cl.column
-                        value: cl.value
-                        values: cl.values
-                        openClause: openClause
-                        closeClause: closeClause
-                    )
-
-                    countc++
-                    count++
-            else
-                c.values = []
-                c.value = json[v]
-
-            if (!dgo)
-                clause.push(
-                    link: cLink
-                    op: c.op
-                    expression: c.expression
-                    column: c.column
-                    value: c.value
-                    values: c.values
-                    openClause: openClause
-                    closeClause: closeClause
+                    return "#{memo}, #{val}"
                 )
-                #console.log(c)
-                cLink = operators["OBJECT"].link
+                clauses.push("#{key} IN (#{values})")
 
-            count++
+            else if (_.isObject(value))
+                clauses.push(@sqlFromOperator(key, value))
+            else
+                if (_.isString(value)) then value = "'#{value}'"
+                clauses.push("#{key} = #{value}")
 
-            dgo = 0
+        newClause = clauses.join(' AND ')
 
-        clause[(clause.length-1)].closeClause = 1
-        return clause
+        return newClause
 
-    _clauseTemplate = () ->
-        c =  {
-            link: operators['DEFAULT'].link
-            op: operators['DEFAULT'].op
-            expression: operators['DEFAULT'].expression
-            column: ''
-            value: ''
-            values: []
-        }
-        return c
+    sqlFromArray: (arr) ->
+        clauses = []
+        for a in arr
+            if (_.isObject(a))
+                clauses.push("(#{@sqlFromObject(a)})")
+            else
+                throw new Error("Invalid clause, a where array can contains only objects")
+        return "(#{clauses.join(' OR ')})"
 
-    jsonsToClause: (json, c) ->
-        clause = []
-        if (!c)
-            c = _clauseTemplate()
-
-        if (_.isArray(json))
-            c.link = operators['ARRAY'].link
-            if (!_cLink)
-                _cLink = c.link
-
-            for j in json
-                c.link = _cLink
-
-                cltemp = _jsonToClause(c, j)
-                if (_.isArray(cltemp))
-
-                    for clt in cltemp
-                        if (_.isObject(clt))
-                            clause.push(clt)
-
-        else if (_.isObject(json))
-            c.link = operators['OBJECT'].link
-            if (!_cLink)
-                _cLink = c.link
-            clause = _jsonToClause(c, json)
-
-
-        return clause
-
-    clauseToStmt: (c) ->
-        stmt = ""
-
-        if (_.isArray(c.values) && c.values.length >= 1 &&
-                                    c.expression == "$COLUMN$ $OP$ $VALUE$")
-            stmt += " #{c.link} ("
-            if (c.openClause) then stmt += "("
-            c.link = operators['ARRAY'].link
-            x = 1
-            for v in c.values
-                exp = _buildExpression(c.expression, {
-                        column: c.column
-                        value: v
-                        op: c.op
-                        values: c.values
-                })
-                if (x>1) then stmt+= " #{c.link} "
-                stmt += "(#{exp})"
-                x++
-            stmt += ")"
-            if (c.closeClause) then stmt += ")"
-
-        else if (c.value || c.expression != "$COLUMN$ $OP$ $VALUE$")
-            exp = _buildExpression(c.expression, {
-                    column: c.column
-                    value: c.value
-                    op: c.op
-                    values: c.values
-            })
-            stmt += " #{c.link} "
-            if (c.openClause) then stmt += "("
-            stmt += "(#{exp})"
-            if (c.closeClause) then stmt += ")"
-            x++
-
-        return stmt
-
-    jsonToStmt: (json, stmt) ->
-        if (!stmt) then where = ''
-        c = @jsonsToClause(json)
-        if (_.isArray(c))
-            for data in c
-                if (_.isArray(data))
-                    @jsonToStmt(data, where)
-                else if (_.isObject(data))
-                    where += @clauseToStmt(data)
-        else if (_.isObject(c))
-            where += @clauseToStmt(c)
-
-        return where
-
-    buildClauses: (data) ->
-        stmt = ""
-        if (_.isArray(data))
-            for json in data
-                stmt += @jsonToStmt(json)
-        else if (_.isObject(data))
-            stmt += @jsonToStmt(data)
+    whereHandler: (w, conector) ->
+        if (_.isArray(w))
+            newClause = @sqlFromArray(w)
+        else if (_.isObject(w))
+            newClause = @sqlFromObject(w)
         else
-            throw new Error("Invalid data on build! \n #{data}")
+            newClause = w
 
-        return stmt.substring(4)
+        if (@whereClause != "")
+            if (@whereClause[0] != '(' && @whereClause[(@whereClause.length-1)] != ')')
+                @whereClause = "(#{@whereClause})"
 
+            if (newClause[0] != '(' && newClause[(newClause.length-1)] != ')')
+                newClause = "(#{newClause})"
+
+            @whereClause = "#{@whereClause} #{conector} #{newClause}"
+        else
+            @whereClause = "#{newClause}"
+
+    where: (w) ->
+        if (@whereClause)
+            throw new Error("Already use the .where, check your code")
+
+        @whereHandler(w)
+        return @
+
+    and: (w) ->
+        @whereHandler(w, "AND")
+        return @
+
+    or: (w) ->
+        @whereHandler(w, "OR")
+        return @
+
+    getWhere: () ->
+        if (@whereClause != "")
+            return "where #{@whereClause}"
+        else
+            return ''
 
 module.exports = SqlExpression

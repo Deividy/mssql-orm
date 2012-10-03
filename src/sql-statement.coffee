@@ -3,35 +3,28 @@ SqlExpression = require('./sql-expression')
 
 
 class SqlStatement
-    constructor: (@tableSchema) ->
-        @whereClause = []
+    constructor: (@table) ->
         @columns = []
+        @sql = new SqlExpression()
+
+    # SqlExpression functions
+    where: (w) ->
+        @sql.where(w)
+        return @
+    and: (w) ->
+        @sql.and(w)
+        return @
+    or: (w) ->
+        @sql.or(w)
+        return @
 
     save: () ->
 
-
     select: (w) ->
-        where = @getWhere(w)
-        columns = @getColumns()
-
-        return "SELECT #{columns} FROM  #{@tableSchema.name} #{where}"
+        select = "SELECT #{@getColumns()} FROM #{@table} #{@sql.getWhere()}"
+        return select
 
     insert: (data) ->
-        keys = ""
-        values = ""
-        count = 1
-        for key, val of data
-            if (count > 1)
-                keys += ", "
-                values += ", "
-
-            keys += key
-            values += "'#{val}'"
-            count++
-
-        ret = "INSERT INTO #{@tableSchema.name} (#{keys}) VALUES (#{values})"
-
-        return ret
 
     update: (data, w) ->
 
@@ -42,8 +35,6 @@ class SqlStatement
         else
             @columns.push(c)
 
-    where: (w) ->
-        @whereClause.push(w)
 
     getColumns: () ->
         columns = ''
@@ -57,17 +48,5 @@ class SqlStatement
             columns = "*"
 
         return columns
-
-    getWhere: (w) ->
-        sql = new SqlExpression()
-        if (w)
-            v = sql.buildClauses(w)
-        else
-            v = sql.buildClauses(@whereClause)
-
-        if (v)
-            return "where #{v}"
-        else
-            return ""
 
 module.exports = SqlStatement
