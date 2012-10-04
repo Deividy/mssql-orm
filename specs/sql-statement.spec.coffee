@@ -41,17 +41,6 @@ describe('SqlStatement tests', () ->
             e = "INSERT INTO users (name, login, number) VALUES ('Test', 'testing', 20)"
             i.should.eql(e)
         )
-
-        it('supports a array to insert', () ->
-            s = new SqlStatement('users')
-            i = s.insert([
-                { name: 'Test', login: 'testing', number: 20 }
-                { name: 'log', login: 'o'}
-            ])
-            e = "INSERT INTO users (name, login, number) VALUES ('Test', 'testing', 20); "
-            e += "INSERT INTO users (name, login) VALUES ('log', 'o')"
-            i.should.eql(e)
-        )
     )
 
     describe("Update tests", () ->
@@ -67,6 +56,14 @@ describe('SqlStatement tests', () ->
             i = s.update({ name: 'testing', login: 'test' }, [{ id: 1 }, { l: 't'}])
             e = "UPDATE users set name = 'testing', login = 'test' where ((id = 1) OR (l = 't'))"
             i.should.eql(e)
+        )
+    )
+
+    describe("Delete tests", () ->
+        it('should return a delete sql', () ->
+            s = new SqlStatement('users')
+            e = "DELETE FROM users where (id = 1)"
+            s.delete({ id: 1 }).should.eql(e)
         )
     )
 

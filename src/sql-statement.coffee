@@ -30,9 +30,9 @@ class SqlStatement
 
         return "SELECT #{@getColumns()} FROM #{@table} #{@sql.getWhere()}"
 
-    objToKeysValues: (obj) ->
+    kvFromObject: (obj) ->
         if (!_.isObject(obj))
-            throw new Error("ObjToKeysValues supports only objects")
+            throw new Error("SqlStatement.ObjToKeysValues() supports only objects")
 
         ret = { keys: [], values: [], keysEquals: [] }
         for k, v of obj
@@ -42,27 +42,17 @@ class SqlStatement
 
         return ret
 
-    insertArray: (a) ->
-        ret = []
-        if (_.isArray(a))
-            for d in a
-                ret.push(@insert(d))
-        else
-            throw new Error("arrayToSqls expects an array")
-
-        return ret.join("; ")
-
     insert: (d) ->
-        if (_.isArray(d)) then return @insertArray(d)
-        kv = @objToKeysValues(d)
+        if (!_.isObject(d)) then throw new Error("SqlStatement.insert() supports only object")
+
+        kv = @kvFromObject(d)
 
         return "INSERT INTO #{@table} (#{kv.keys.join(', ')}) VALUES (#{kv.values.join(', ')})"
 
     update: (d, w) ->
-        if (_.isArray(d))
-            throw new Error("Update using array is not supported")
+        if (!_.isObject(d)) then throw new Error("SqlStatement.update() supports only object")
 
-        kv = @objToKeysValues(d)
+        kv = @kvFromObject(d)
 
         @where(w)
         return "UPDATE #{@table} set #{kv.keysEquals.join(', ')} #{@sql.getWhere()}"
@@ -71,7 +61,7 @@ class SqlStatement
         @where(w)
         where = @sql.getWhere()
         if (!where)
-            throw new Error("delete withou where!")
+            throw new Error("SqlStatement.delete() without where!")
         else
             return "DELETE FROM #{@table} #{where}"
 
@@ -79,8 +69,7 @@ class SqlStatement
         if (c)
             if (_.isArray(c))
                 @columns = @columns.concat(c)
-            else
-                @columns.push(c)
+            else @columns.push(c)
 
         return @
 

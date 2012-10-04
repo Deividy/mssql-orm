@@ -51,6 +51,7 @@ class SqlExpression
                 clauses.push(@sqlFromObject(a))
             else
                 throw new Error("Invalid clause, a where array can contains only objects")
+
         return "(#{clauses.join(' OR ')})"
 
     addClause: (w, conector) ->
