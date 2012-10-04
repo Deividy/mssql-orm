@@ -1,11 +1,11 @@
-DatabaseEngine = require('./adapters/tds')
+DatabaseEngine = require('./engine')
 
 class DatabaseUtils
     constructor: (@config) ->
         @engine = new DatabaseEngine(@config)
 
     dbNow: (callback) ->
-    	@engine.execute(
+    	@engine.adapter.execute(
             {
                 master:true
                 stmt:"SELECT GETDATE();"
@@ -15,7 +15,7 @@ class DatabaseUtils
         )
 
     dbUtcNow: (callback) ->
-    	@engine.execute(
+    	@engine.adapter.execute(
             {
                 master:true
                 stmt:"SELECT GETUTCDATE();"
@@ -25,7 +25,7 @@ class DatabaseUtils
         )
 
     dbUtcOffset: (callback) ->
-    	@engine.execute(
+    	@engine.adapter.execute(
             {
                 master:true
                 stmt:"SELECT DATEDIFF(mi, GETUTCDATE(), GETDATE());"

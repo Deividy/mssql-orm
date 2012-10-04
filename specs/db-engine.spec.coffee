@@ -1,6 +1,6 @@
 fs = require('fs')
 tds = require('tds')
-DatabaseEngine = require('../src/db/adapters/tds')
+DatabaseEngine = require('../src/db/engine')
 
 env = "development"
 config = null
@@ -20,14 +20,14 @@ describe('DatabaseEngine: On the test', () ->
 
         it('should connect to the master database', (done) ->
             engine = new DatabaseEngine(config)
-            engine.connect({master:true}, (conn) ->
+            engine.adapter.connect({master:true}, (conn) ->
                 conn.should.be.ok
                 done()
             )
         )
 
         it('should check if the app database exists', (done) ->
-            engine.doesDatabaseExist(config.database, (db) ->
+            engine.adapter.doesDatabaseExist(config.database, (db) ->
                 db.should.be.ok
                 done()
             )
@@ -35,20 +35,20 @@ describe('DatabaseEngine: On the test', () ->
 
         it('should create a database', (done) ->
             db_name = "test_db_#{Date.now()}"
-            engine.createDatabase(db_name, (dn) ->
+            engine.adapter.createDatabase(db_name, (dn) ->
                 done()
             )
         )
 
         it('should check if the created database exists', (done) ->
-            engine.doesDatabaseExist(db_name, (db) ->
+            engine.adapter.doesDatabaseExist(db_name, (db) ->
                 db.should.be.ok
                 done()
             )
         )
 
         it('should drop the created database', (done) ->
-            engine.dropDatabase(db_name, (dn) ->
+            engine.adapter.dropDatabase(db_name, (dn) ->
                 dn.should.be.ok
                 done()
             )

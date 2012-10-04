@@ -1,7 +1,7 @@
 tds = require('tds')
 _ = require('underscore')
 
-class DatabaseEngine
+class TdsEngine
     constructor: (@config) ->
 
     connect: (options, callback) ->
@@ -122,4 +122,4 @@ class DatabaseEngine
             }
         )
 
-module.exports = DatabaseEngine
+module.exports = TdsEngine

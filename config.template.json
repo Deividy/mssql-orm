@@ -2,6 +2,7 @@
     "development": {
         "database": {
             "mssql": {
+                "engine": "mssql",
                 "host": "DATABASE_HOST",
                 "port": "DATABASE_PORT",
                 "userName": "DATABASE_USER",
@@ -13,6 +14,7 @@
     "test": {
         "database": {
             "mssql": {
+                "engine": "mssql",
                 "host": "DATABASE_HOST",
                 "port": "1433",
                 "userName": "DATABASE_USER",
@@ -24,6 +26,7 @@
     "production": {
         "database": {
             "mssql": {
+                "engine": "mssql",
                 "host": "DATABASE_HOST",
                 "port": "1433",
                 "userName": "DATABASE_USER",

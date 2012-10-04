@@ -1,11 +1,12 @@
-DatabaseEngine = require('./db/adapters/tds')
+DatabaseEngine = require('./db/engine')
 
 class Database
     constructor: (@config) ->
         @engine = new DatabaseEngine(@config)
+        @adapter = @engine.adapter
 
     query: (stmt, callback) ->
-        @engine.execute({
+        @adapter.execute({
             stmt: stmt
             onDone: (done) ->
                 return callback(done)
@@ -14,7 +15,7 @@ class Database
     getRows: (stmt, callback) ->
         self = @
         data = []
-        @engine.execute({
+        @adapter.execute({
             stmt: stmt
             onRow: (row) ->
                 data.push(self._getColumns(row))
