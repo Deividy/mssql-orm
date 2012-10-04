@@ -27,58 +27,30 @@ describe('DatabaseEngine: On the test', () ->
         )
 
         it('should check if the app database exists', (done) ->
-            engine.execute(
-                {
-                    master:true
-                    stmt:"SELECT DB_ID('#{config.database}');"
-                    onRow: (row) ->
-                        row.getValue(0).should.be.ok
-                        done()
-                }
+            engine.doesDatabaseExist(config.database, (db) ->
+                db.should.be.ok
+                done()
             )
         )
 
         it('should create a database', (done) ->
             db_name = "test_db_#{Date.now()}"
-            engine.execute(
-                {
-                    master:true
-                    stmt:"IF (DB_ID('#{db_name}') IS NULL) CREATE DATABASE #{db_name};"
-                    onDone: (dn) ->
-                        done()
-                }
+            engine.createDatabase(db_name, (dn) ->
+                done()
+            )
+        )
+
+        it('should check if the created database exists', (done) ->
+            engine.doesDatabaseExist(db_name, (db) ->
+                db.should.be.ok
+                done()
             )
         )
 
         it('should drop the created database', (done) ->
-            killDatabase = () ->
-                engine.execute(
-                    {
-                        master:true
-                        stmt:"IF (DB_ID('#{db_name}') IS NOT NULL) DROP DATABASE #{db_name};"
-                        onDone: (dn) ->
-                            done()
-                    }
-                )
-            killProcess = (id) ->
-                engine.execute(
-                    {
-                        master:true
-                        stmt:"KILL #{id}"
-                        onDone: (dn) ->
-                            killDatabase()
-                    }
-                )
-            engine.execute(
-                {
-                    master:true
-                    stmt:"SELECT SPId FROM MASTER..SysProcesses WHERE DBId =
-                    DB_ID('#{db_name}') AND cmd <> 'CHECKPOINT';"
-                    onRow: (row) ->
-                        return killProcess(row.getValue(0)) if row
-                    onDone: (dn) ->
-                        killDatabase()
-                }
+            engine.dropDatabase(db_name, (dn) ->
+                dn.should.be.ok
+                done()
             )
         )
     )

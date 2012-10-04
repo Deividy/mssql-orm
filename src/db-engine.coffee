@@ -65,4 +65,61 @@ class DatabaseEngine
         return (done) ->
             # console.info('Done info', done)
 
+    doesDatabaseExist: (name, callback) ->
+        @execute(
+            {
+                master:true
+                stmt:"SELECT DB_ID('#{name}');"
+                onRow: (row) ->
+                    return callback(row.getValue(0))
+            }
+        )
+
+    createDatabase: (name, callback) ->
+        @execute(
+            {
+                master:true
+                stmt:"IF (DB_ID('#{name}') IS NULL) CREATE DATABASE #{name};"
+                onDone: (done) ->
+                    callback(done)
+            }
+        )
+
+    dropDatabase: (name, callback) ->
+        self = @
+        @_killDatabaseProcesses(name, (done) ->
+            self.execute(
+                {
+                    master:true
+                    stmt:"IF (DB_ID('#{name}') IS NOT NULL) DROP DATABASE #{name};"
+                    onDone: (dn) ->
+                        return callback(dn)
+                }
+            )
+        )
+
+    _killDatabaseProcesses: (name, callback) ->
+        self = @
+        @execute(
+            {
+                master:true
+                stmt:"SELECT SPId FROM MASTER..SysProcesses WHERE DBId =
+                DB_ID('#{name}') AND cmd <> 'CHECKPOINT';"
+                onRow: (row) ->
+                    return self._killProcess(row.getValue(0), callback) if row
+                onDone: (done) ->
+                    return callback(done)
+            }
+        )
+
+    _killProcess: (id, callback) ->
+        engine.execute(
+            {
+                master:true
+                stmt:"KILL #{id}"
+                onDone: (done) ->
+                    return callback(done)
+            }
+        )
+
 module.exports = DatabaseEngine
