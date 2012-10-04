@@ -1,4 +1,4 @@
-DatabaseEngine = require('./db-engine')
+DatabaseEngine = require('./index')
 
 class DatabaseUtils
     constructor: (@config) ->
