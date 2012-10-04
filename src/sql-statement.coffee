@@ -67,6 +67,14 @@ class SqlStatement
         @where(w)
         return "UPDATE #{@table} set #{kv.keysEquals.join(', ')} #{@sql.getWhere()}"
 
+    delete: (w) ->
+        @where(w)
+        where = @sql.getWhere()
+        if (!where)
+            throw new Error("delete withou where!")
+        else
+            return "DELETE FROM #{@table} #{where}"
+
     column: (c) ->
         if (c)
             if (_.isArray(c))
