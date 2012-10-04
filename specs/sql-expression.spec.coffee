@@ -22,7 +22,6 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         exp = "where (((age = 22 AND name = 'deividy') OR (test = 123 AND testing = 1234))"
         exp += " AND (login = 'root'))"
 
-
         sql.getWhere().should.eql(exp)
     )
 

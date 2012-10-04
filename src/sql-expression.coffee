@@ -69,18 +69,18 @@ class SqlExpression
 
 
     where: (w) ->
-        if (@whereClause)
-            throw new Error("Already use the .where, check your code")
+        if (w)
+            if (@whereClause) then @whereClause = ""
+            @addClause(w)
 
-        @addClause(w)
         return @
 
     and: (w) ->
-        @addClause(w, "AND")
+        if (w) then @addClause(w, "AND")
         return @
 
     or: (w) ->
-        @addClause(w, "OR")
+        if (w) then @addClause(w, "OR")
         return @
 
     getWhere: () ->
