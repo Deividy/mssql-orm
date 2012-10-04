@@ -1,6 +1,6 @@
 REPORTER = spec
 # Mocha path
-MOCHA=mocha
+MOCHA=./node_modules/mocha/bin/mocha
 # Specs path
 TEST=./specs/*.spec.coffee
 
