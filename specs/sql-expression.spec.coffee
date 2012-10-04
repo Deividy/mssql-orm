@@ -1,6 +1,6 @@
 SqlExpression = require('../src/sql-expression')
 
-describe('tests with sql-expression', () ->
+describe('SqlExpression builds SQL WHERE clauses', () ->
     it('handles two objects ANDed', () ->
         sql = new SqlExpression()
         sql.where({ age: 22, name: 'deividy' })
