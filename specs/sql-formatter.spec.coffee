@@ -1,4 +1,4 @@
-SqlWhere = require('../src/sql-where').SqlWhere
+SqlConditional = require('../src/sql-grammar').SqlConditional
 SqlFormatter = require('../src/sql-formatter')
 
 assert = (sqlWhere, expected) ->
@@ -8,7 +8,7 @@ assert = (sqlWhere, expected) ->
 
 describe('SqlExpression builds SQL WHERE clauses', () ->
     it('handles two objects ANDed', () ->
-        sql = new SqlWhere()
+        sql = new SqlConditional()
         sql.where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
 
