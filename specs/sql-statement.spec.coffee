@@ -1,3 +1,4 @@
+###
 SqlStatement = require('../src/sql-statement')
 
 describe('SqlStatement tests', () ->
