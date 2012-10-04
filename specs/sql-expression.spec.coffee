@@ -10,7 +10,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         exp += " AND (test = 123 AND testing = 1234))"
 
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('accepts where(object) followed by .or(object) then .and(object)', () ->
@@ -23,7 +23,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         exp += " AND (login = 'root'))"
 
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('transforms JS array for column values into SQL IN operator', () ->
@@ -32,7 +32,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         sql.where({ age: [22, 30, 40] , name: 'deividy' })
         exp = "where (age IN (22, 30, 40) AND name = 'deividy')"
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('supports ad-hoc SQL operators like >=', () ->
@@ -41,7 +41,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         sql.where({ age: { '>=': 18 } , name: 'deividy' })
         exp = "where (age >= 18 AND name = 'deividy')"
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('supports SQL BETWEEN operator', () ->
@@ -50,7 +50,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         sql.where({ age: { 'between': [18, 23] } , name: 'deividy' })
         exp = "where (age BETWEEN 18 AND 23 AND name = 'deividy')"
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('supports multiple operators for a single column, plus .or() and .and()', () ->
@@ -63,7 +63,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         exp += "OR (test BETWEEN 18 AND 25 AND testing = 1234)) "
         exp += "AND (login = 'root'))"
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('ORs conditions passed in an array', () ->
@@ -72,7 +72,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         sql.where([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
         exp = "where ((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy'))"
 
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('can AND together two OR groups, and use parens appropriately', () ->
@@ -83,7 +83,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
 
         exp = "where (((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
         exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123)))"
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('accepts raw SQL and can .and() it with another clause', () ->
@@ -92,7 +92,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
             .and({ name: 'test' })
 
         exp = "where (id = 1 AND test = 2 AND (name = 'test'))"
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('accepts raw SQL followed by .and() then .or()', () ->
@@ -102,7 +102,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
             .or("login = 'test'")
 
         exp = "where ((id = 1 AND test = 2 AND (name = 'test')) OR login = 'test')"
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
     it('protects against SQL injections', () ->
@@ -110,7 +110,7 @@ describe('SqlExpression builds SQL WHERE clauses', () ->
         sql.where({ login: "HAX0R '-- SELECT * FROM users" })
 
         exp = "where (login = 'HAX0R ''-- SELECT * FROM users')"
-        expect(sql.getWhere()).toEqual(exp)
+        sql.getWhere().should.eql(exp)
     )
 
 )
