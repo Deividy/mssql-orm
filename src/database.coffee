@@ -1,46 +1,36 @@
-tds = require('tds')
+DatabaseEngine = require('./db-engine')
 
 class Database
     constructor: (@config) ->
+        @engine = new DatabaseEngine(@config)
 
-    connect: (callback) ->
-        self = @
-        @conn = new tds.Connection(@config)
-        @conn.connect((err) ->
-            if (err)
-                console.error('Received error: ', err)
-            else
-                self.conn.on('error', (error) ->
-                  console.error('Received error', error)
-                )
-                self.conn.on('message', (message) ->
-                  console.info('Received info', message)
-                )
-                callback(self.conn)
-        )
     query: (stmt, callback) ->
+        @engine.execute({
+            stmt: stmt
+            onDone: (done) ->
+                return callback(done)
+        })
 
     getRows: (stmt, callback) ->
+        self = @
         data = []
-        @connect((conn) ->
-            stmt = conn.createStatement(stmt)
-            stmt.on('row', (row) ->
-                data.push(row)
-            )
-            stmt.on('done', (done) ->
-                callback(data)
-            )
-            stmt.execute()
-        )
+        @engine.execute({
+            stmt: stmt
+            onRow: (row) ->
+                data.push(self._getColumns(row))
+                return
+            onDone: (done) ->
+                return callback(data)
+        })
 
-    _toJSON = (data) ->
+    _toJSON: (data) ->
         out = []
         for item in data
             if item.name == 'ROW'
                 out.push(@_getColumns(item))
         return out
 
-    _getColumns = (item) ->
+    _getColumns: (item) ->
         out = {}
         for col of item.metadata.columnsByName
             out[col] = item.getValue(col)
