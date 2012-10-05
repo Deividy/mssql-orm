@@ -1,5 +1,5 @@
 _ = require('underscore')
-SqlConditional = require('./sql-grammar').SqlConditional
+SqlPredicate = require('./sql-grammar').SqlConditional
 
 class SqlFormatter
     @f: (v) ->
@@ -54,7 +54,7 @@ class SqlFormatter
         return "(#{clauses.join(' OR ')})"
 
     conditional: (t) ->
-        return t.toSql(@) if (t instanceof SqlConditional)
+        return t.toSql(@) if (t instanceof SqlPredicate)
         return "(#{t})" if (_.isString(t))
         return @conditionalArray(t) if (_.isArray(t))
         return @conditionalObject(t) if (_.isObject(t))

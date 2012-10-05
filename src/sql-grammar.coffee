@@ -3,7 +3,7 @@ _ = require('underscore')
 class SqlToken
     toSql: (formatter) -> return ''
 
-class SqlConditional extends SqlToken
+class SqlPredicate extends SqlToken
     constructor: (@expr) ->
 
     and: (w) ->
@@ -19,13 +19,13 @@ class SqlConditional extends SqlToken
     toSql: (formatter) ->
         return formatter.conditional(@expr)
 
-class SqlAnd extends SqlConditional
+class SqlAnd extends SqlPredicate
     constructor: (@a, @b) ->
 
     toSql: (formatter) ->
         return formatter.and(@a, @b)
 
-class SqlOr extends SqlConditional
+class SqlOr extends SqlPredicate
     constructor: (@a, @b) ->
 
     toSql: (formatter) ->
@@ -65,7 +65,7 @@ class SqlSelect extends SqlToken
         return @
 
     where: (w) ->
-        @lastConditional = @whereClause = new SqlConditional(w)
+        @lastConditional = @whereClause = new SqlPredicate(w)
         return @
 
     groupBy: (column) ->
@@ -73,7 +73,7 @@ class SqlSelect extends SqlToken
         return @
 
     having: (c) ->
-        @lastConditional = @havingClause = new SqlConditional(c)
+        @lastConditional = @havingClause = new SqlPredicate(c)
         return @
 
     orderBy: (o) ->
@@ -92,6 +92,6 @@ p = SqlSelect.prototype
 p.limit = p.top = p.take
 
 module.exports = {
-    SqlConditional: SqlConditional
+    SqlPredicate: SqlConditional
     SqlToken: SqlToken
 }
