@@ -6,10 +6,6 @@ class SqlToken
 class SqlConditional extends SqlToken
     constructor: (@expr) ->
 
-    where: (w) ->
-        @expr = w if (w)
-        return @
-
     and: (w) ->
         # SHOULD: Validate arguments
         @expr = new SqlAnd(@expr, w)
@@ -34,6 +30,13 @@ class SqlOr extends SqlConditional
 
     toSql: (formatter) ->
         return formatter.or(@a, @b)
+
+class SqlSelect extends SqlToken
+    where: (w) ->
+        return @whereClause = new SqlConditional(w)
+
+    having: (c) ->
+        return @havingClause = new SqlConditional(c)
 
 module.exports = {
     SqlConditional: SqlConditional
