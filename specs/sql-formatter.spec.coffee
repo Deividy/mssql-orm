@@ -1,12 +1,13 @@
 SqlConditional = require('../src/sql-grammar').SqlConditional
 SqlFormatter = require('../src/sql-formatter')
 
+f = new SqlFormatter()
+
 assert = (sqlWhere, expected) ->
-    f = new SqlFormatter()
     ret = "WHERE #{sqlWhere.toSql(f)}"
     ret.should.eql(expected)
 
-describe('SqlConditional builds SQL WHERE clauses', () ->
+describe('SqlConditional builds SQL conditional expressions', () ->
     it('handles two objects ANDed', () ->
         sql = new SqlConditional({ age: 22, name: 'deividy' })
         sql.and({ test: 123, testing: 1234 })
@@ -19,8 +20,7 @@ describe('SqlConditional builds SQL WHERE clauses', () ->
 
     it('accepts where(object) followed by .or(object) then .and(object)', () ->
         sql = new SqlConditional({ age: 22, name: 'deividy' })
-        sql.or({ test: 123, testing: 1234 })
-                .and({ login: 'root'})
+        sql.or({ test: 123, testing: 1234 }).and({ login: 'root'})
 
         exp = "WHERE (((age = 22 AND name = 'deividy') OR (test = 123 AND testing = 1234))"
         exp += " AND (login = 'root'))"
@@ -50,8 +50,7 @@ describe('SqlConditional builds SQL WHERE clauses', () ->
 
     it('supports multiple operators for a single column, plus .or() and .and()', () ->
         sql = new SqlConditional({ age: { ">": 18, "<": 25 }, name: 'deividy' })
-        sql.or({ test: { "between": [18,25] }, testing: 1234 })
-                .and({ login: 'root'})
+        sql.or({ test: { "between": [18,25] }, testing: 1234 }).and({ login: 'root'})
 
         exp = "WHERE (((age > 18 AND age < 25 AND name = 'deividy') "
         exp += "OR (test BETWEEN 18 AND 25 AND testing = 1234)) "
@@ -91,12 +90,16 @@ describe('SqlConditional builds SQL WHERE clauses', () ->
         assert(sql, exp)
     )
 
+    it('accepts raw SQL and objects mixed in OR array', () ->
+        sql = new SqlConditional([{id: 10, name: 'Deividy'}, "FOOBAR LIKE '%gonzo%'"])
+        exp = "WHERE ((id = 10 AND name = 'Deividy') OR (FOOBAR LIKE '%gonzo%'))"
+        assert(sql, exp)
+    )
+
     it('protects against SQL injections', () ->
         sql = new SqlConditional({ login: "HAX0R '-- SELECT * FROM users" })
 
         exp = "WHERE (login = 'HAX0R ''-- SELECT * FROM users')"
         assert(sql, exp)
     )
-
-
 )
