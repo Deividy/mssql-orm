@@ -1,4 +1,4 @@
-SqlPredicate = require('../src/db/dialects/base-grammar').SqlPredicate
+SqlPredicate = require('../src/db/dialects/sql-grammar').SqlPredicate
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
 f = new SqlFormatter()
