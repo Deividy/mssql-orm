@@ -1,6 +1,6 @@
 _ = require('underscore')
-SqlExpression = require('./sql-expression')
-SqlFormatter = require('./sql-formatter')
+SqlExpression = require('./dialects/base-expression')
+SqlFormatter = require('./dialects/base-formatter')
 
 format = SqlFormatter.f
 

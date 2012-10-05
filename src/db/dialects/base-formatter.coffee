@@ -1,5 +1,5 @@
 _ = require('underscore')
-SqlPredicate = require('./sql-grammar').SqlPredicate
+SqlPredicate = require('./base-grammar').SqlPredicate
 
 class SqlFormatter
     @f: (v) ->
