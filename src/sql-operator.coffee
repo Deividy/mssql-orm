@@ -1,28 +1,28 @@
-
+SqlFormatter = require('./sql-formatter')
+SqlConditional = require('./sql-grammar').SqlConditional
 _ = require('underscore')
 
 format = SqlFormatter.f
 
 class SqlOperator
-    constructor: () ->
-        @whereClause = ""
-
-    sqlFromOperator: (key, op) ->
+    operator: (key, op) ->
         clauses = []
         for k, v of op
             if (k == 'between')
-                if (_.isArray(v) and v.length==2)
+                if (_.isArray(v) && v.length == 2)
                     clauses.push("#{key} BETWEEN #{format(v[0])} AND #{format(v[1])}")
                 else
                     throw new Error("Invalid between clause")
+
             else if (!_.isArray(v) && !_.isObject(v))
                 clauses.push("#{key} #{k} #{format(v)}")
+
             else
                 throw new Error("Not suported arrays or objects inside an object")
 
         return clauses.join(" AND ")
 
-    sqlFromObject: (obj) ->
+    conditionalObject: (obj) ->
         clauses = []
         for key, value of obj
 
@@ -31,8 +31,9 @@ class SqlOperator
                     return "#{memo}, #{format(val)}"
                 )
                 clauses.push("#{key} IN (#{values})")
+
             else if (_.isObject(value))
-                clauses.push(@sqlFromOperator(key, value))
+                clauses.push(@operator(key, value))
             else
                 clauses.push("#{key} = #{format(value)}")
 
@@ -40,49 +41,26 @@ class SqlOperator
 
         return newClause
 
-    sqlFromArray: (arr) ->
+    conditionalArray: (arr) ->
         clauses = []
         for a in arr
-            if (_.isObject(a))
-                clauses.push(@sqlFromObject(a))
-            else
-                throw new Error("Invalid clause, a where array can contains only objects")
+            clauses.push(@conditional(a))
+
         return "(#{clauses.join(' OR ')})"
 
-    addClause: (w, conector) ->
-        if (_.isArray(w))
-            newClause = @sqlFromArray(w)
-        else if (_.isObject(w))
-            newClause = @sqlFromObject(w)
-        else
-            newClause = w
-
-        if (!@whereClause)
-            @whereClause = newClause
-            return
-
-        @whereClause = "(#{@whereClause} #{conector} #{newClause})"
+    conditional: (t) ->
+        return t.toSql(@) if (t instanceof SqlConditional)
+        return "(#{t})" if (_.isString(t))
+        return @conditionalArray(t) if (_.isArray(t))
+        return @conditionalObject(t) if (_.isObject(t))
+        throw new Error("Unsupported conditional " + t.toString())
 
 
-    where: (w) ->
-        if (@whereClause)
-            throw new Error("Already use the .where, check your code")
+    and: (a, b) ->
+        return "(#{@conditional(a)} AND #{@conditional(b)})"
 
-        @addClause(w)
-        return @
+    or: (a, b) ->
+        return "(#{@conditional(a)} OR #{@conditional(b)})"
 
-    and: (w) ->
-        @addClause(w, "AND")
-        return @
 
-    or: (w) ->
-        @addClause(w, "OR")
-        return @
-
-    getWhere: () ->
-        if (@whereClause != "")
-            return "where #{@whereClause}"
-        else
-            return ''
-
-module.exports = SqlExpression
+module.exports = SqlOperator
