@@ -92,6 +92,6 @@ p = SqlSelect.prototype
 p.limit = p.top = p.take
 
 module.exports = {
-    SqlPredicate: SqlConditional
+    SqlPredicate: SqlPredicate
     SqlToken: SqlToken
 }

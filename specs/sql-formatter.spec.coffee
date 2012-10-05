@@ -1,4 +1,4 @@
-SqlPredicate = require('../src/sql-grammar').SqlConditional
+SqlPredicate = require('../src/sql-grammar').SqlPredicate
 SqlFormatter = require('../src/sql-formatter')
 
 f = new SqlFormatter()
