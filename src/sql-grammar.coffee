@@ -32,11 +32,64 @@ class SqlOr extends SqlConditional
         return formatter.or(@a, @b)
 
 class SqlSelect extends SqlToken
+    constructor: ->
+        @columns = []
+        @tables = []
+
+    select: (columnList) ->
+        # MUST: decide what to accept in column list (multiple args? array? anything?)
+        return @
+
+    distinct: () ->
+        @quantifier = "DISTINCT"
+        return @
+
+    all: () ->
+        @quantifier = "ALL"
+        return @
+
+    skip: (n) ->
+        @cntSkip = n
+        return @
+
+    take: (n) ->
+        @cntTake = n
+        return @
+
+    from: (table) ->
+        @tables.push(table)
+        return @
+
+    join: (joinedTable) ->
+        # MUST: implement
+        return @
+
     where: (w) ->
-        return @whereClause = new SqlConditional(w)
+        @lastConditional = @whereClause = new SqlConditional(w)
+        return @
+
+    groupBy: (column) ->
+        (@groupByColumns ?= []).push(column)
+        return @
 
     having: (c) ->
-        return @havingClause = new SqlConditional(c)
+        @lastConditional = @havingClause = new SqlConditional(c)
+        return @
+
+    orderBy: (o) ->
+        # MUST: implement
+        return @
+
+    and: (c) ->
+        @lastConditional.and(c)
+        return @
+
+    or: (c) ->
+        @lastConditional.or(c)
+        return @
+
+p = SqlSelect.prototype
+p.limit = p.top = p.take
 
 module.exports = {
     SqlConditional: SqlConditional
