@@ -93,4 +93,5 @@ p.limit = p.top = p.take
 
 module.exports = {
     SqlPredicate: SqlPredicate
+    SqlSelect: SqlSelect
 }

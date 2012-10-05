@@ -1,16 +1,16 @@
 _ = require('underscore')
-SqlExpression = require('./dialects/base-expression')
-SqlFormatter = require('./dialects/base-formatter')
+SqlSelect = require('./db/dialects/sql-grammar').SqlSelect
+SqlFormatter = require('./db/dialects/base-formatter')
 
 format = SqlFormatter.f
 
 class SqlStatement
     constructor: (@table) ->
         @columns = []
-        # Need to initialize an instance of SqlExpression to all. Otherwise, will be a mess.
-        @sql = new SqlExpression()
+        # Need to initialize an instance of SqlSelect to all. Otherwise, will be a mess.
+        @sql = new SqlSelect()
 
-    # SqlExpression methods
+    # SqlSelect methods
     where: (w) ->
         @sql.where(w)
         return @
@@ -27,8 +27,9 @@ class SqlStatement
     select: (c, w) ->
         @column(c)
         @where(w)
-
-        return "SELECT #{@getColumns()} FROM #{@table} #{@sql.getWhere()}"
+        # MUST: refactor, this is just a temp code
+        # return "SELECT #{@getColumns()} FROM #{@table} #{@sql.getWhere()}"
+        return "SELECT #{@getColumns()} FROM #{@table}"
 
     kvFromObject: (obj) ->
         if (!_.isObject(obj))

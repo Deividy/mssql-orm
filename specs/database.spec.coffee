@@ -1,5 +1,4 @@
 fs = require('fs')
-tds = require('tds')
 Database = require('../src/database')
 
 env = "development"

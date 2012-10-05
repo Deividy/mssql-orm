@@ -8,9 +8,13 @@ class DynamicModels extends DbSchema
         name = name.replace(upc, upc.toUpperCase());
         return name
 
-    makeModels: (callback) ->
+    makeModels: (options, callback) ->
+        if arguments.length == 1
+            callback = options
+            options = {}
         self = @
         nConvetion = _nameConvention
+        database = options?.database
 
         @getDbTree((tree)->
             tables = tree.tables
@@ -21,6 +25,7 @@ class DynamicModels extends DbSchema
                     # For static methods
                     @tableName: tableName
                     @tableSchema: tableData
+                    @database: database
 
                     # For instance methods
                     tableName: tableName

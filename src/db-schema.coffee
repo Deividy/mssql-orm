@@ -25,10 +25,10 @@ class DbSchema
             fkColumns = []
 
             data.forEach((item) ->
-                colName = item.getValue('CONSTRAINT_NAME')
-                tblName = item.getValue('TABLE_NAME')
-                constraintKey = item.getValue('CONSTRAINT_TYPE')
-                column = item.getValue('COLUMN_NAME')
+                colName = item['CONSTRAINT_NAME']
+                tblName = item['TABLE_NAME']
+                constraintKey = item['CONSTRAINT_TYPE']
+                column = item['COLUMN_NAME']
 
                 if (!tables[tblName])
                     tables[tblName] = {}
@@ -83,9 +83,9 @@ class DbSchema
                         WHERE b.CONSTRAINT_NAME = '#{fk.fKey}'", (data) ->
 
                     data.forEach((item) ->
-                        belongs = item.getValue('TABLE_NAME')
-                        tkey = item.getValue('UNIQUE_CONSTRAINT_NAME')
-                        ck = item.getValue('CONSTRAINT_NAME')
+                        belongs = item['TABLE_NAME']
+                        tkey = item['UNIQUE_CONSTRAINT_NAME']
+                        ck = item['CONSTRAINT_NAME']
 
                         targetKey = {
                             name: tkey
@@ -95,8 +95,8 @@ class DbSchema
                             fk: ck
                             targetKey: targetKey
                             targetTable: belongs
-                            onDelete: item.getValue('DELETE_RULE')
-                            onUpdate: item.getValue('UPDATE_RULE')
+                            onDelete: item['DELETE_RULE']
+                            onUpdate: item['UPDATE_RULE']
                         }
 
                         tables[fk.tblName]["fk"].push(fKey)
@@ -114,16 +114,16 @@ class DbSchema
             COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH,
             CHARACTER_OCTET_LENGTH FROM INFORMATION_SCHEMA.COLUMNS", (data) ->
             data.forEach((item) ->
-                tblName = item.getValue('TABLE_NAME')
-                colName = item.getValue('COLUMN_NAME')
+                tblName = item['TABLE_NAME']
+                colName = item['COLUMN_NAME']
 
                 tables[tblName]['columns'][colName] = {
-                     index: item.getValue('ORDINAL_POSITION')
-                     default: item.getValue('COLUMN_DEFAULT')
-                     isNull: item.getValue('IS_NULLABLE')
-                    type: item.getValue('DATA_TYPE')
-                    maxLength: item.getValue('CHARACTER_MAXIMUM_LENGTH')
-                    octLength: item.getValue('CHARACTER_OCTET_LENGTH')
+                     index: item['ORDINAL_POSITION']
+                     default: item['COLUMN_DEFAULT']
+                     isNull: item['IS_NULLABLE']
+                    type: item['DATA_TYPE']
+                    maxLength: item['CHARACTER_MAXIMUM_LENGTH']
+                    octLength: item['CHARACTER_OCTET_LENGTH']
                 }
             )
             callback(tables)
