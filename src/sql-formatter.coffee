@@ -27,7 +27,7 @@ class SqlFormatter
 
         return clauses.join(" AND ")
 
-    conditionalObject: (obj) ->
+    predicateObject: (obj) ->
         clauses = []
         for key, value of obj
 
@@ -46,25 +46,25 @@ class SqlFormatter
 
         return newClause
 
-    conditionalArray: (arr) ->
+    predicateArray: (arr) ->
         clauses = []
         for a in arr
-            clauses.push(@conditional(a))
+            clauses.push(@predicate(a))
 
         return "(#{clauses.join(' OR ')})"
 
-    conditional: (t) ->
+    predicate: (t) ->
         return t.toSql(@) if (t instanceof SqlPredicate)
         return "(#{t})" if (_.isString(t))
-        return @conditionalArray(t) if (_.isArray(t))
-        return @conditionalObject(t) if (_.isObject(t))
-        throw new Error("Unsupported conditional " + t.toString())
+        return @predicateArray(t) if (_.isArray(t))
+        return @predicateObject(t) if (_.isObject(t))
+        throw new Error("Unsupported predicate " + t.toString())
 
 
     and: (a, b) ->
-        return "(#{@conditional(a)} AND #{@conditional(b)})"
+        return "(#{@predicate(a)} AND #{@predicate(b)})"
 
     or: (a, b) ->
-        return "(#{@conditional(a)} OR #{@conditional(b)})"
+        return "(#{@predicate(a)} OR #{@predicate(b)})"
 
 module.exports = SqlFormatter

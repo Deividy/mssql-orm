@@ -17,7 +17,7 @@ class SqlPredicate extends SqlToken
         return @
 
     toSql: (formatter) ->
-        return formatter.conditional(@expr)
+        return formatter.predicate(@expr)
 
 class SqlAnd extends SqlPredicate
     constructor: (@a, @b) ->
@@ -65,7 +65,7 @@ class SqlSelect extends SqlToken
         return @
 
     where: (w) ->
-        @lastConditional = @whereClause = new SqlPredicate(w)
+        @lastPredicate = @whereClause = new SqlPredicate(w)
         return @
 
     groupBy: (column) ->
@@ -73,7 +73,7 @@ class SqlSelect extends SqlToken
         return @
 
     having: (c) ->
-        @lastConditional = @havingClause = new SqlPredicate(c)
+        @lastPredicate = @havingClause = new SqlPredicate(c)
         return @
 
     orderBy: (o) ->
@@ -81,11 +81,11 @@ class SqlSelect extends SqlToken
         return @
 
     and: (c) ->
-        @lastConditional.and(c)
+        @lastPredicate.and(c)
         return @
 
     or: (c) ->
-        @lastConditional.or(c)
+        @lastPredicate.or(c)
         return @
 
 p = SqlSelect.prototype
