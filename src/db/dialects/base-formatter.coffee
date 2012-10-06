@@ -34,7 +34,9 @@ class SqlFormatter
     predicateObject: (obj) ->
         clauses = []
         for key, value of obj
-
+            # HACK: Need find another way to get tableAlias here
+            key = "#{@delimit(@tableAlias)}.#{@delimit(key)}" if (@tableAlias)
+            #
             if(_.isArray(value))
                 values = _.reduce(value, (memo, val) ->
                     return "#{memo}, #{format(val)}"
@@ -57,6 +59,7 @@ class SqlFormatter
 
         return "(#{clauses.join(' OR ')})"
 
+
     predicate: (t) ->
         return t.toSql(@) if (t instanceof SqlPredicate)
         return "(#{t})" if (_.isString(t))
@@ -74,12 +77,13 @@ class SqlFormatter
     identifier: (c) -> "#{delimit(c.tableName)}.#{delimit(c.columnName)}"
 
     identifierGuess: (c) ->
-        return "#{@delimit(c.guessTable)}.#{@delimit(c.given)}" if (c.guessTable)
+        return "#{@delimit(c.guessTable)}.#{@delimit(c.given)}" if (c.guessTable?)
         return @delimit(c.given)
 
-    delimit: (s) -> "[#{s}]"
+    delimit: (s) -> 
+        return "[#{s}]"
 
-    column: (c) ->
+    formatAlias: (c) ->
         column = c[0]
         alias = c[1]
 
@@ -88,25 +92,34 @@ class SqlFormatter
         else
             s = column.toSql(@)
 
-        s += " as #{@delimit(alias)}" if (alias)
+        s += " as #{@delimit(alias)}" if (alias?)
         return s
 
     columns: (columnList) ->
         return "*" if (columnList.length == 0)
-        cols = (@column(c) for c in columnList)
+        cols = (@formatAlias(c) for c in columnList)
         return cols.join(", ")
 
     tables: (tableList) ->
-        tables = (@column(t) for t in tableList)
+        tables = (@formatAlias(t) for t in tableList)
         return tables.join(", ")
 
     select: (c) ->
-        ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
+        ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)} "
 
-        #ret += "#{c.lastAlias} " if (c.lastAlias != c.lastTable)
-        ret += "WHERE #{@predicate(c.whereClause)}" if (c.whereClause)
-        ret += "HAVING #{@predicate(c.havingClause)}" if (c.havingClause)
-
+        ret += @getWhere(c)
+        ret += @getHaving(c)
         return ret
+
+    getHaving: (c) ->
+        return "HAVING #{@predicate(c.havingClause)}" if (c.havingClause?)
+        return ""
+
+    getWhere: (c) ->
+        # HACK: Need find another way to send tableAlias for predicateObject()
+        @tableAlias = c.lastAlias if (c.lastAlias?) 
+        #       
+        return "WHERE #{@predicate(c.whereClause)}" if (c.whereClause?)
+        return ""
 
 module.exports = SqlFormatter

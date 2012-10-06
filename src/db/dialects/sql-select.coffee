@@ -2,21 +2,25 @@ _ = require("underscore")
 { SqlPredicate, SqlIdentifierGuess } = require('./sql-tokens')
 
 class SqlSelect
-    constructor: (t) ->
+    constructor: (tableList...) ->
         @columns = []
         @tables = []
+        @joins = []
 
-        @addTable(t)
+        (@addTable(t) for t in tableList)
 
     addAlias: (o, a) ->
-        r = o if (_.isArray(o))
-        r = [ o, o ] if (_.isString(o))
-        r = [ o ]
+        if (_.isArray(o))
+            r = o
+        else if (_.isString(o))
+            r = [ o, o ]         
+        else
+            r = [ o ]
 
         if (_.isString(r[0]))
             r[0] = new SqlIdentifierGuess(r[0])
 
-        a.push(r)
+        a.push(r) if (a)
 
         return r
 
@@ -26,7 +30,7 @@ class SqlSelect
 
     select: (columns...) ->
         for c in columns
-            col = @addAlias(c, @columns)
+            col = @addAlias(c)
             col[0].guessTable = @lastAlias
 
             @columns.push(col)
@@ -54,8 +58,17 @@ class SqlSelect
         return @
 
     join: (joinedTable) ->
-        # MUST: implement
+        @joins.push(joinedTable) if (joinedTable instanceof SqlSelect)
         return @
+
+    joinOn: (@jOn...) ->
+        ###
+            [
+                [ 'users', 'users_id', 'msgs_id' ]
+            ]
+        ###
+
+    joinType: (@jType) ->
 
     where: (w) ->
         @whereClause = new SqlPredicate(w)

@@ -6,6 +6,14 @@ f = new SqlFormatter()
 
 assert = (sqlSelect, expected) ->
     ret = sqlSelect.toSql(f)
+    ###
+    console.log("--- Return ---")
+    console.log(ret)    
+    console.log("---")
+    console.log("--- Expected ---")
+    console.log(expected)    
+    console.log("---")
+    ###
     ret.should.eql(expected)
 
 describe('SqlSelect builds select SQL expression', () ->
@@ -15,10 +23,10 @@ describe('SqlSelect builds select SQL expression', () ->
                 .where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
 
-        exp = "SELECT [users].[login] as [login], [users].[zid] as [id], [users].[zname] as [name]"
-        exp +=  "FROM users "
-        exp += "WHERE ((age = 22 AND name = 'deividy') "
-        exp += "AND (test = 123 AND testing = 1234))"
+        exp = "SELECT [users].[login] as [login], [users].[zid] as [id], [users].[zname] as [name] "
+        exp += "FROM [users] as [users] "
+        exp += "WHERE (([users].[age] = 22 AND [users].[name] = 'deividy') "
+        exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
 
         assert(s, exp)
     )
@@ -29,9 +37,10 @@ describe('SqlSelect builds select SQL expression', () ->
                 .where({ age: 22, name: 'deividy' })
                 .or({ test: 123, testing: 1234 })
 
-        exp = "SELECT [u].[login] as [login], [u].[zid] as [id], [u].[zname] as [name] FROM users u "
-        exp += "WHERE ((age = 22 AND name = 'deividy')"
-        exp += " OR (test = 123 AND testing = 1234))"
+        exp = "SELECT [u].[login] as [login], [u].[zid] as [id], [u].[zname] as [name] "
+        exp += "FROM [users] as [u] "
+        exp += "WHERE (([u].[age] = 22 AND [u].[name] = 'deividy') "
+        exp += "OR ([u].[test] = 123 AND [u].[testing] = 1234))"
 
         assert(s, exp)
     )

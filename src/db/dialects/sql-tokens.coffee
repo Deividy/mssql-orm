@@ -9,7 +9,7 @@ class SqlIdentifier extends SqlToken
 
 
 class SqlIdentifierGuess extends SqlIdentifier
-    constructor: (@guessTable, @given) ->
+    constructor: (@given, @guessTable) ->
 
     toSql: (formatter) ->
         formatter.identifierGuess(@)
