@@ -1,18 +1,15 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken } = require('./sql-grammar')
+{ SqlPredicate, SqlIdentifierGuess } = require('./sql-tokens')
 SqlSelect = require('./sql-select')
-
-SqlIdentifier = SqlToken.SqlIdentifier
 
 class SqlFormatter
     @f: (v) ->
-        if (_.isString(v))
-            return "'" + v.replace("'","''") + "'"
-
+        return "'" + v.replace("'","''") + "'" if (_.isString(v))
         return v.toString()
 
     format = SqlFormatter.f
 
+    # MUST: Refactor use sql-operator
     operator: (key, op) ->
         clauses = []
         for k, v of op
@@ -25,7 +22,6 @@ class SqlFormatter
 
             else if (!_.isArray(v) && !_.isObject(v))
                 clauses.push("#{key} #{k} #{format(v)}")
-
             else
                 throw new Error("Not suported arrays or objects inside an object")
 
@@ -33,32 +29,24 @@ class SqlFormatter
 
     predicateObject: (obj) ->
         clauses = []
-        for key, value of obj
-            # HACK: Need find another way to get tableAlias here
-            key = "#{@delimit(@tableAlias)}.#{@delimit(key)}" if (@tableAlias)
-            #
-            if(_.isArray(value))
-                values = _.reduce(value, (memo, val) ->
-                    return "#{memo}, #{format(val)}"
-                )
-                clauses.push("#{key} IN (#{values})")
+        if (obj instanceof SqlIdentifierGuess) then o = obj.given else o = obj
+        for key, value of o
+            key = "#{@delimit(obj.guessTable)}.#{@delimit(key)}" if (obj.guessTable?)
 
+            if(_.isArray(value))
+                values = _.reduce(value, (memo, val) -> "#{memo}, #{format(val)}")
+                clauses.push("#{key} IN (#{values})")
             else if (_.isObject(value))
                 clauses.push(@operator(key, value))
             else
                 clauses.push("#{key} = #{format(value)}")
 
-        newClause = "(#{clauses.join(' AND ')})"
-
-        return newClause
+        return "(#{clauses.join(' AND ')})"
 
     predicateArray: (arr) ->
         clauses = []
-        for a in arr
-            clauses.push(@predicate(a))
-
+        (clauses.push(@predicate(a)) for a in arr)
         return "(#{clauses.join(' OR ')})"
-
 
     predicate: (t) ->
         return t.toSql(@) if (t instanceof SqlPredicate)
@@ -68,11 +56,9 @@ class SqlFormatter
         throw new Error("Unsupported predicate " + t.toString())
 
 
-    and: (a, b) ->
-        return "(#{@predicate(a)} AND #{@predicate(b)})"
+    and: (a, b) -> "(#{@predicate(a)} AND #{@predicate(b)})"
 
-    or: (a, b) ->
-        return "(#{@predicate(a)} OR #{@predicate(b)})"
+    or: (a, b) -> "(#{@predicate(a)} OR #{@predicate(b)})"
 
     identifier: (c) -> "#{delimit(c.tableName)}.#{delimit(c.columnName)}"
 
@@ -80,8 +66,7 @@ class SqlFormatter
         return "#{@delimit(c.guessTable)}.#{@delimit(c.given)}" if (c.guessTable?)
         return @delimit(c.given)
 
-    delimit: (s) -> 
-        return "[#{s}]"
+    delimit: (s) -> "[#{s}]"
 
     formatAlias: (c) ->
         column = c[0]
@@ -106,7 +91,6 @@ class SqlFormatter
 
     select: (c) ->
         ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)} "
-
         ret += @getWhere(c)
         ret += @getHaving(c)
         return ret
@@ -116,9 +100,6 @@ class SqlFormatter
         return ""
 
     getWhere: (c) ->
-        # HACK: Need find another way to send tableAlias for predicateObject()
-        @tableAlias = c.lastAlias if (c.lastAlias?) 
-        #       
         return "WHERE #{@predicate(c.whereClause)}" if (c.whereClause?)
         return ""
 

@@ -2,37 +2,34 @@ _ = require("underscore")
 { SqlPredicate, SqlIdentifierGuess } = require('./sql-tokens')
 
 class SqlSelect
-    constructor: (tableList...) ->
+    constructor: (table) ->
         @columns = []
         @tables = []
         @joins = []
 
-        (@addTable(t) for t in tableList)
+        @addTable(table)
 
     addAlias: (o, a) ->
         if (_.isArray(o))
             r = o
         else if (_.isString(o))
-            r = [ o, o ]         
+            r = [ o, o ]
         else
-            r = [ o ]
+            throw new Error("Format not supported for addAlias #{o.toString()}")
 
-        if (_.isString(r[0]))
-            r[0] = new SqlIdentifierGuess(r[0])
-
+        r[0] = new SqlIdentifierGuess(r[0]) if (_.isString(r[0]))
         a.push(r) if (a)
 
         return r
 
     addTable: (t) ->
         table = @addAlias(t, @tables)
-        @lastAlias = table[1] if (table[1])
+        @lastAlias = if (table[1]?) then table[1] else table[0]
 
     select: (columns...) ->
         for c in columns
             col = @addAlias(c)
             col[0].guessTable = @lastAlias
-
             @columns.push(col)
 
         return @
@@ -54,25 +51,17 @@ class SqlSelect
         return @
 
     from: (table) ->
-        @tables.push(table)
+        @addTable(table)
         return @
 
     join: (joinedTable) ->
-        @joins.push(joinedTable) if (joinedTable instanceof SqlSelect)
+        # joinedTable = { type: "LEFT", table: SqlSelect }
+        @joins.push(joinedTable)
         return @
 
-    joinOn: (@jOn...) ->
-        ###
-            [
-                [ 'users', 'users_id', 'msgs_id' ]
-            ]
-        ###
-
-    joinType: (@jType) ->
-
     where: (w) ->
-        @whereClause = new SqlPredicate(w)
-        @lastPredicate = @whereClause
+        i = new SqlIdentifierGuess(w, @lastAlias)
+        if (!@whereClause?) then @whereClause = new SqlPredicate(i) else @whereClause.and(i)
         return @
 
     groupBy: (column) ->
@@ -81,7 +70,7 @@ class SqlSelect
 
     having: (c) ->
         @havingClause = new SqlPredicate(c)
-        @lastPredicate = @havingClause
+        @whereClause = @havingClause
         return @
 
     orderBy: (o) ->
@@ -89,11 +78,13 @@ class SqlSelect
         return @
 
     and: (c) ->
-        @lastPredicate.and(c)
+        i = new SqlIdentifierGuess(c, @lastAlias)
+        @whereClause.and(i)
         return @
 
     or: (c) ->
-        @lastPredicate.or(c)
+        i = new SqlIdentifierGuess(c, @lastAlias)
+        @whereClause.or(i)
         return @
 
     toSql: (f) ->
