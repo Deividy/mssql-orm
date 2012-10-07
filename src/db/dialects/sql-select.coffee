@@ -13,7 +13,7 @@ class SqlSelect
         if (_.isArray(o))
             r = o
         else if (_.isString(o))
-            r = [ o, o ]         
+            r = [ o, o ]
         else
             r = [ o ]
 

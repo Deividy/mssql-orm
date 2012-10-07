@@ -1,6 +1,5 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken } = require('./sql-grammar')
-SqlSelect = require('./sql-select')
+{ SqlPredicate, SqlToken, SqlSelect } = require('./sql-grammar')
 
 SqlIdentifier = SqlToken.SqlIdentifier
 
@@ -10,6 +9,8 @@ class SqlFormatter
             return "'" + v.replace("'","''") + "'"
 
         return v.toString()
+
+    literal: (l) -> SqlFormatter.f(l)
 
     format = SqlFormatter.f
 
@@ -80,7 +81,9 @@ class SqlFormatter
         return "#{@delimit(c.guessTable)}.#{@delimit(c.given)}" if (c.guessTable?)
         return @delimit(c.given)
 
-    delimit: (s) -> 
+    name: (n) ->
+
+    delimit: (s) ->
         return "[#{s}]"
 
     formatAlias: (c) ->
@@ -117,7 +120,7 @@ class SqlFormatter
 
     getWhere: (c) ->
         # HACK: Need find another way to send tableAlias for predicateObject()
-        @tableAlias = c.lastAlias if (c.lastAlias?) 
+        @tableAlias = c.lastAlias if (c.lastAlias?)
         #       
         return "WHERE #{@predicate(c.whereClause)}" if (c.whereClause?)
         return ""

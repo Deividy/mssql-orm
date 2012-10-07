@@ -1,5 +1,9 @@
 class SqlToken
-    toSql: (formatter) -> return ''
+    toSql: () -> ''
+
+class SqlVerbatim
+    constructor: (@s) ->
+    toSql: -> @s
 
 class SqlIdentifier extends SqlToken
     constructor: (@columnName) ->
@@ -7,12 +11,19 @@ class SqlIdentifier extends SqlToken
     toSql: (formatter) ->
         formatter.identifier(@)
 
-
 class SqlIdentifierGuess extends SqlIdentifier
     constructor: (@given, @guessTable) ->
 
     toSql: (formatter) ->
         formatter.identifierGuess(@)
+
+class SqlName extends SqlToken
+    constructor: (@n, @prefixHint) ->
+    toSql: (f) -> f.name(@)
+
+class SqlMultiPartName extends SqlToken
+    constructor: (@parts) ->
+    toSql: (f) -> f.multiPartName(@)
 
 class SqlPredicate extends SqlToken
     constructor: (@expr) ->
@@ -42,9 +53,15 @@ class SqlOr extends SqlPredicate
     toSql: (formatter) ->
         return formatter.or(@a, @b)
 
+class SqlLiteral extends SqlToken
+    constructor: (@l) ->
+    toSql: (f) -> f.literal(@l)
+
 module.exports = {
     SqlPredicate: SqlPredicate
     SqlToken: SqlToken
     SqlIdentifier: SqlIdentifier
     SqlIdentifierGuess: SqlIdentifierGuess
+    SqlName: SqlName
+    SqlMultiPartName: SqlMultiPartName
 }
