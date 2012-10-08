@@ -17,6 +17,10 @@ assert = (sqlSelect, expected) ->
     ret.should.eql(expected)
 
 describe('SqlSelect builds select SQL expression', () ->
+    it('detects expressions as columns', ->
+        s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
+        assert(s, "SELECT LEN(LastName) as LenLastName FROM customers C")
+    )
     it('handles two objects ANDed', () ->
         s = sql.from('users')
                 .select("login", [ 'zid', 'id' ], [ 'zname', 'name' ])
