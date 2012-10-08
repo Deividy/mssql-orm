@@ -8,6 +8,30 @@ assert = (sqlWhere, expected) ->
     ret.should.eql(expected)
 
 describe('SqlPredicate', () ->
+    it('builds a predicate from an object', ->
+        p = SqlPredicate.wrap({firstName: 'Ron', lastName: 'Weasley'})
+        
+
+    )
+
+    it('detects a SQL expression used as a column', () ->
+        p = sql.predicate({ "Qty * Price": { ">": 100 } })
+        exp = "Qty * Price > 100"
+        assert(p, exp)
+    )
+
+    it('allows a sql name in the rhs', () ->
+        p = sql.predicate( { "LastName": sql.name("FirstName")} )
+        exp = "LastName = FirstName"
+        assert(p, exp)
+    )
+
+    it('allows explicit SQL tokens in the LHS', () ->
+        p = sql.predicate(sql.expr("LEN(LastName)"), { ">": 10 })
+        exp = "LEN(LastName) > 10"
+        assert(p, exp)
+    )
+
     it('handles two objects ANDed', () ->
         p = sql.predicate({ age: 22, name: 'deividy' })
         p.and({ test: 123, testing: 1234 })
@@ -31,7 +55,7 @@ describe('SqlPredicate', () ->
     it('transforms JS array for column values into SQL IN operator', () ->
         p = sql.predicate({ age: [22, 30, 40] , name: 'deividy' })
         exp = "(age IN (22, 30, 40) AND name = 'deividy')"
-
+        
         assert(p, exp)
     )
 
@@ -100,24 +124,6 @@ describe('SqlPredicate', () ->
         p = sql.predicate({ login: "HAX0R '-- SELECT * FROM users" })
 
         exp = "(login = 'HAX0R ''-- SELECT * FROM users')"
-        assert(p, exp)
-    )
-
-    it('detects a SQL expression used as a column', () ->
-        p = sql.predicate({ "Qty * Price": { ">": 100 } })
-        exp = "Qty * Price > 100"
-        assert(p, exp)
-    )
-
-    it('allows a sql name in the rhs', () ->
-        p = sql.predicate( { "LastName": sql.name("FirstName")} )
-        exp = "LastName = FirstName"
-        assert(p, exp)
-    )
-
-    it('allows explicit SQL tokens in the LHS', () ->
-        p = sql.predicate(sql.expr("LEN(LastName)"), { ">": 10 })
-        exp = "LEN(LastName) > 10"
         assert(p, exp)
     )
 

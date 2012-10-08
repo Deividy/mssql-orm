@@ -53,6 +53,8 @@ class SqlFormatter
 
         return newClause
 
+    parens: (contents) -> "(#{contents.toSql(@)})"
+
     predicateArray: (arr) ->
         clauses = []
         for a in arr
