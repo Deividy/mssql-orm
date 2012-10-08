@@ -61,7 +61,11 @@ class SqlSelect
 
     where: (w) ->
         i = new SqlIdentifierGuess(w, @lastAlias)
-        if (!@whereClause?) then @whereClause = new SqlPredicate(i) else @whereClause.and(i)
+        if (!@whereClause?) 
+            @lastPredicate = @whereClause = new SqlPredicate(i) 
+        else 
+            @lastPredicate = @whereClause.and(i)
+        
         return @
 
     groupBy: (column) ->
@@ -69,8 +73,11 @@ class SqlSelect
         return @
 
     having: (c) ->
-        @havingClause = new SqlPredicate(c)
-        @whereClause = @havingClause
+        i = new SqlIdentifierGuess(c, @lastAlias)
+        if (!@havingClause?) 
+            @lastPredicate = @havingClause = new SqlPredicate(i) 
+        else 
+            @lastPredicate = @havingClause.and(i)
         return @
 
     orderBy: (o) ->
@@ -79,12 +86,12 @@ class SqlSelect
 
     and: (c) ->
         i = new SqlIdentifierGuess(c, @lastAlias)
-        @whereClause.and(i)
+        @lastPredicate.and(i)
         return @
 
     or: (c) ->
         i = new SqlIdentifierGuess(c, @lastAlias)
-        @whereClause.or(i)
+        @lastPredicate.or(i)
         return @
 
     toSql: (f) ->
