@@ -3,6 +3,11 @@ _ = require('underscore')
 
 SqlIdentifier = SqlToken.SqlIdentifier
 
+rgxParseName = ///
+    ( [^.]+ )   # anything that's not a .
+    \.?         # optional . at the end
+///g
+
 class SqlFormatter
     format: (v) ->
         return v.toSql(@) if v instanceof SqlToken
@@ -34,7 +39,20 @@ class SqlFormatter
         t = _.map(terms, @format, @)
         return "(#{t.join(" OR " )})"
 
-    name: (name) -> name.n
+    name: (n) ->
+        parts = @parseName(n.name)
+        if (parts.length == 1 && n.prefixHint?)
+            parts.unshift(n.prefixHint)
+        return @names(parts)
+
+    multiPartName: (m) -> @names(m.parts)
+    names: (names) -> _.map(names, (p) -> "[#{p}]").join(".")
+
+    parseName: (name) ->
+        parts = []
+        while (match = rgxParseName.exec(name))
+            parts.push(match[1])
+        return parts
 
     delimit: (s) ->
         return "[#{s}]"
@@ -45,7 +63,7 @@ class SqlFormatter
 
         if (column instanceof SqlSelect)
             s = "(#{@select(column)})"
-        else
+        
             s = column.toSql(@)
 
         s += " as #{@delimit(alias)}" if (alias?)

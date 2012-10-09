@@ -16,7 +16,7 @@ class SqlExpression extends SqlVerbatim
     constructor: (@s) ->
 
 class SqlName extends SqlToken
-    constructor: (@n, @prefixHint) ->
+    constructor: (@name, @prefixHint) ->
     toSql: (f) -> f.name(@)
 
 class SqlMultiPartName extends SqlToken
@@ -119,4 +119,15 @@ module.exports = {
     SqlPredicate: SqlPredicate
     SqlAnd: SqlAnd
     SqlOr: SqlOr
+
+    verbatim: (s) -> new SqlVerbatim(s)
+    predicate: (p) -> new SqlPredicate(p)
+    name: (n, prefixHint) ->
+        return new SqlMultiPartName(n) if _.isArray(n)
+        return new SqlName(n, prefixHint)
+
+    expr: (e) -> new SqlExpression(e)
+
+    and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
+    or: (terms...) -> new SqlOr(_.map(terms, SqlPredicate.wrap))
 }

@@ -3,23 +3,23 @@ SqlFormatter = require('../src/db/dialects/base-formatter')
 
 
 f = new SqlFormatter()
+debug = true
 
 assert = (sqlSelect, expected) ->
     ret = sqlSelect.toSql(f)
-    ###
-    console.log("--- Return ---")
-    console.log(ret)    
-    console.log("---")
-    console.log("--- Expected ---")
-    console.log(expected)    
-    console.log("---")
-    ###
+    if debug
+        console.log("--- Return ---")
+        console.log(ret)
+        console.log("---")
+        console.log("--- Expected ---")
+        console.log(expected)
+        console.log("---")
     ret.should.eql(expected)
 
 describe('SqlSelect builds select SQL expression', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
-        assert(s, "SELECT LEN(LastName) as LenLastName FROM customers C")
+        assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
     )
 
     it('handles two objects ANDed', () ->

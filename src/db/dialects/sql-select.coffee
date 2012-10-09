@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlPredicate, SqlIdentifierGuess } = require('./sql-tokens')
+{ SqlPredicate, SqlName } = sql = require('./sql-tokens')
 
 class SqlSelect
     constructor: (tableList...) ->
@@ -18,7 +18,7 @@ class SqlSelect
             r = [ o ]
 
         if (_.isString(r[0]))
-            r[0] = new SqlIdentifierGuess(r[0])
+            r[0] = new SqlName(r[0])
 
         a.push(r) if (a)
 

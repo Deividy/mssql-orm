@@ -92,7 +92,7 @@ describe('SqlPredicate', () ->
 
     it('can AND together two OR groups, and use parens appropriately', () ->
         p = sql.predicate(sql.or({ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }))
-        p.and(sql.or({ login: 'test', pass: 12 }, { login: 'test123', pass: 123 } ))
+        p.and( sql.or({ login: 'test', pass: 12 }, { login: 'test123', pass: 123 }) )
         
         exp = "(((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
         exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123)))"
