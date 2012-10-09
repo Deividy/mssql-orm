@@ -64,7 +64,7 @@ class SqlFormatter
         if (column instanceof SqlSelect)
             s = "(#{@select(column)})"
         
-            s = column.toSql(@)
+        s = column.toSql(@)
 
         s += " as #{@delimit(alias)}" if (alias?)
         return s
@@ -79,21 +79,18 @@ class SqlFormatter
         return tables.join(", ")
 
     select: (c) ->
-        ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)} "
+        ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
 
         ret += @getWhere(c)
         ret += @getHaving(c)
         return ret
 
     getHaving: (c) ->
-        return "HAVING #{@predicate(c.havingClause)}" if (c.havingClause?)
+        return " HAVING #{@predicate(c.havingClause)}" if (c.havingClause?)
         return ""
 
     getWhere: (c) ->
-        # HACK: Need find another way to send tableAlias for predicateObject()
-        @tableAlias = c.lastAlias if (c.lastAlias?)
-        #       
-        return "WHERE #{@predicate(c.whereClause)}" if (c.whereClause?)
+        return " WHERE #{(c.whereClause.toSql(@))}" if (c.whereClause?)
         return ""
 
 module.exports = SqlFormatter

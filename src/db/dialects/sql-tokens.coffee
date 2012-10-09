@@ -1,10 +1,9 @@
 _ = require('underscore')
 
-rgxExpression = "*+/-()"
+rgxExpression = /[()\+\*\-/]/
+nameOrExpr = (s) -> if rgxExpression.test(s) then new SqlExpression(s) else new SqlName(s)
 
 class SqlToken
-    @rgxExpression: /[()\+\*\-/]/
-    @nameOrExpr: (s) -> if @rgxExpression.test(s) then new SqlExpression(s) else new SqlName(s)
     cascade: (fn) -> fn(@)
     toSql: () -> ''
 
@@ -35,7 +34,7 @@ class SqlParens extends SqlToken
 class SqlRelop extends SqlToken
     @pushRelops: (left, right, relops = []) ->
         if _.isString(left)
-            left = SqlToken.nameOrExpr(left)
+            left = nameOrExpr(left)
 
         if _.isArray(right)
             relops.push(new SqlRelop(left, 'IN', right))
@@ -111,6 +110,7 @@ class SqlLiteral extends SqlToken
     constructor: (@l) ->
     toSql: (f) -> f.literal(@l)
 
+
 module.exports = {
     SqlToken: SqlToken
     SqlExpression: SqlExpression
@@ -127,6 +127,8 @@ module.exports = {
         return new SqlName(n, prefixHint)
 
     expr: (e) -> new SqlExpression(e)
+    
+    nameOrExpr: nameOrExpr
 
     and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
     or: (terms...) -> new SqlOr(_.map(terms, SqlPredicate.wrap))

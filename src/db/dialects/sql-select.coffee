@@ -17,8 +17,7 @@ class SqlSelect
         else
             r = [ o ]
 
-        if (_.isString(r[0]))
-            r[0] = new SqlName(r[0])
+        r[0] = sql.nameOrExpr(r[0], @tableHint)
 
         a.push(r) if (a)
 

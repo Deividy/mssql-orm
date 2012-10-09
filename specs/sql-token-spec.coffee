@@ -2,8 +2,8 @@
 
 describe('SqlToken', () ->
     it('Can tell expressions from names', ->
-        SqlToken.nameOrExpr("Qty * Price").should.be.an.instanceOf(SqlExpression)
-        SqlToken.nameOrExpr("Foobar").should.be.an.instanceOf(SqlName)
+        sql.nameOrExpr("Qty * Price").should.be.an.instanceOf(SqlExpression)
+        sql.nameOrExpr("Foobar").should.be.an.instanceOf(SqlName)
     )
 
     it('Handles simple and multi-part names', ->

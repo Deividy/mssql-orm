@@ -9,7 +9,7 @@ assert = (sqlSelect, expected) ->
     ret = sqlSelect.toSql(f)
     if debug
         console.log("--- Return ---")
-        console.log(ret)
+        console.log("'#{ret}'")
         console.log("---")
         console.log("--- Expected ---")
         console.log(expected)
@@ -19,6 +19,7 @@ assert = (sqlSelect, expected) ->
 describe('SqlSelect builds select SQL expression', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
+        console.log require('sys').inspect(s, true, 5)
         assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
     )
 
