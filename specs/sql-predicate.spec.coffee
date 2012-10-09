@@ -55,7 +55,7 @@ describe('SqlPredicate', () ->
 
     it('transforms JS array for column values into SQL IN operator', () ->
         p = sql.predicate({ age: [22, 30, 40] , name: 'deividy' })
-        exp = "(age IN (22, 30, 40) AND name = 'deividy')"
+        exp = "(age IN (22,30,40) AND name = 'deividy')"
         
         assert(p, exp)
     )
