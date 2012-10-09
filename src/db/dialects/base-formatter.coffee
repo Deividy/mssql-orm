@@ -27,11 +27,11 @@ class SqlFormatter
         return "#{@format(left)} #{op} #{r}"
 
     and: (terms) ->
-        t = _.map(terms, ((t) -> @format(t)), @)
+        t = _.map(terms, @format, @)
         return "(#{t.join(" AND " )})"
 
     or: (terms) ->
-        t = _.map(terms, ((t) -> @format(t)), @)
+        t = _.map(terms, @format, @)
         return "(#{t.join(" OR " )})"
 
     name: (name) -> name.n
