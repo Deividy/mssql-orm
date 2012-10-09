@@ -112,9 +112,11 @@ class SqlLiteral extends SqlToken
     toSql: (f) -> f.literal(@l)
 
 module.exports = {
-    SqlPredicate: SqlPredicate
-    SqlExpression: SqlExpression
     SqlToken: SqlToken
+    SqlExpression: SqlExpression
     SqlName: SqlName
     SqlMultiPartName: SqlMultiPartName
+    SqlPredicate: SqlPredicate
+    SqlAnd: SqlAnd
+    SqlOr: SqlOr
 }

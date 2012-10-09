@@ -17,7 +17,14 @@ class SqlFormatter
     parens: (contents) -> "(#{contents.toSql(@)})"
 
     relop: (left, op, right) ->
-        return "#{@format(left)} #{op} #{@format(right)}"
+        # MUST: replace with data driven approach
+        op = op.toUpperCase()
+        r = switch op
+            when 'IN' then "(#{@format(right)})"
+            when 'BETWEEN' then "#{@format(right[0])} AND #{@format(right[1])}"
+            else @format(right)
+
+        return "#{@format(left)} #{op} #{r}"
 
     and: (terms) ->
         t = _.map(terms, ((t) -> @format(t)), @)

@@ -7,7 +7,6 @@ f = new SqlFormatter()
 
 assert = (sqlWhere, expected) ->
     ret = sqlWhere.toSql(f)
-    console.log(ret)
     ret.should.eql(expected)
 
 describe('SqlPredicate', () ->
@@ -79,21 +78,21 @@ describe('SqlPredicate', () ->
 
         exp = "(((age > 18 AND age < 25 AND name = 'deividy') "
         exp += "OR (test BETWEEN 18 AND 25 AND testing = 1234)) "
-        exp += "AND (login = 'root'))"
+        exp += "AND login = 'root')"
 
         assert(p, exp)
     )
 
-    it('ORs conditions passed in an array', () ->
-        p = sql.predicate([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
+    it('accepts a sql.or() term', () ->
+        p = sql.predicate(sql.or({ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }))
         exp = "((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy'))"
 
         assert(p, exp)
     )
 
     it('can AND together two OR groups, and use parens appropriately', () ->
-        p = sql.predicate([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
-        p.and([{ login: 'test', pass: 12 }, { login: 'test123', pass: 123 } ])
+        p = sql.predicate(sql.or({ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }))
+        p.and(sql.or({ login: 'test', pass: 12 }, { login: 'test123', pass: 123 } ))
         
         exp = "(((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
         exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123)))"
@@ -104,19 +103,19 @@ describe('SqlPredicate', () ->
         p = sql.predicate("id = 1 AND test = 2")
         p.and({ name: 'test' })
 
-        exp = "((id = 1 AND test = 2) AND (name = 'test'))"
+        exp = "((id = 1 AND test = 2) AND name = 'test')"
         assert(p, exp)
     )
 
     it('accepts raw SQL followed by .and() then .or()', () ->
         p = sql.predicate("id = 1 AND test = 2")
         p.and({ name: 'test' }).or("login = 'test'")
-        exp = "(((id = 1 AND test = 2) AND (name = 'test')) OR (login = 'test'))"
+        exp = "(((id = 1 AND test = 2) AND name = 'test') OR (login = 'test'))"
         assert(p, exp)
     )
 
     it('accepts raw SQL and objects mixed in OR array', () ->
-        p = sql.predicate([{id: 10, name: 'Deividy'}, "FOOBAR LIKE '%gonzo%'"])
+        p = sql.predicate(sql.or({id: 10, name: 'Deividy'}, "FOOBAR LIKE '%gonzo%'"))
         exp = "((id = 10 AND name = 'Deividy') OR (FOOBAR LIKE '%gonzo%'))"
         assert(p, exp)
     )
@@ -124,40 +123,7 @@ describe('SqlPredicate', () ->
     it('protects against SQL injections', () ->
         p = sql.predicate({ login: "HAX0R '-- SELECT * FROM users" })
 
-        exp = "(login = 'HAX0R ''-- SELECT * FROM users')"
+        exp = "login = 'HAX0R ''-- SELECT * FROM users'"
         assert(p, exp)
-    )
-
-    it('accepts ', ->
-        return
-
-        # SELECT COUNT(1) ORDERS FROM Orders O WHERE O.CustomerId = C.Id
-        cntOrders = sql.from("Orders").select(sql.expr("COUNT (1)")).where("O.CustomerId", sql.name("C.Id"))
-        
-        cntOrders = sql.from("Orders").select(-> count(1)).where("O.CustomerId", sql.name("C.Id"))
-        
-        cntOrders = sql.from("Orders").selectExpr("COUNT (1)").where("O.CustomerId", sql.name("C.Id"))
-
-        cntOrders = sql.from("Orders").select(sql.expr("COUNT(1)")).where("O.CustomerId", sql.name("C.Id"))
-
-        sql.from("Customers").where("LEN(FirstName) > 10")
-
-        sql.from("Customers").where( { "LEN(FirstName)": { ">", param }  })
-
-        sql.from("Customers").where( sql.name("LEN(f"))
-
-        insert.values( {firstName: 'Harry', lastName: 'Potter'} )
-
-        insert.values({
-            firstName: sql.name("E.Name"),
-            lastName: sql.expr("10 + 20")
-        }).from("")
-
-        update.set( { firstName: 'Harry', lastName: 'Potter' } )
-
-        update.set({
-            firstName: sql.name("O.Name"),
-            lastName: sql.expr("'Old_' + LastName")
-        })
     )
 )

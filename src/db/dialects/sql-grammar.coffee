@@ -1,5 +1,6 @@
 SqlSelect = require('./sql-select')
 sqlTokens = require('./sql-tokens')
+_ = require('underscore')
 
 module.exports = {
     SqlPredicate: sqlTokens.SqlPredicate
@@ -13,4 +14,7 @@ module.exports = {
     name: (n) -> new sqlTokens.SqlName(n)
     multiPartName: (parts) -> new sqlTokens.MultiPartName(parts)
     expr: (e) -> new sqlTokens.SqlExpression(e)
+
+    and: (terms...) -> new sqlTokens.SqlAnd(_.map(terms, sqlTokens.SqlPredicate.wrap))
+    or: (terms...) -> new sqlTokens.SqlOr(_.map(terms, sqlTokens.SqlPredicate.wrap))
 }
