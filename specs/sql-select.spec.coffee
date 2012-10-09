@@ -3,7 +3,7 @@ SqlFormatter = require('../src/db/dialects/base-formatter')
 
 
 f = new SqlFormatter()
-debug = true
+debug = false
 
 assert = (sqlSelect, expected) ->
     ret = sqlSelect.toSql(f)
@@ -19,7 +19,6 @@ assert = (sqlSelect, expected) ->
 describe('SqlSelect builds select SQL expression', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
-        console.log require('sys').inspect(s, true, 5)
         assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
     )
 
@@ -29,9 +28,11 @@ describe('SqlSelect builds select SQL expression', () ->
                 .where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
 
+        #console.log require('sys').inspect(s, true, 5)
+
         exp = "SELECT [users].[login] as [login], [users].[zid] as [id], [users].[zname] as [name] "
         exp += "FROM [users] as [users] "
-        exp += "WHERE (([users].[age] = 22 AND [users].[name] = 'deividy') "
+        exp += "WHERE ([users].[age] = 22 AND [users].[name] = 'deividy' "
         exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
 
         assert(s, exp)

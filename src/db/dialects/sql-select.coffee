@@ -9,7 +9,7 @@ class SqlSelect
 
         (@addTable(t) for t in tableList)
 
-    addAlias: (o, a) ->
+    addWithAlias: (o, a, prefixHint) ->
         if (_.isArray(o))
             r = o
         else if (_.isString(o))
@@ -17,22 +17,17 @@ class SqlSelect
         else
             r = [ o ]
 
-        r[0] = sql.nameOrExpr(r[0], @tableHint)
-
-        a.push(r) if (a)
-
+        (r[0] = sql.nameOrExpr(r[0], prefixHint)) if _.isString(r[0])
+        a.push(r)
         return r
 
     addTable: (t) ->
-        table = @addAlias(t, @tables)
-        @lastAlias = table[1] if (table[1])
+        table = @addWithAlias(t, @tables)
+        @tableHint = table[1] if (table[1]?)
 
     select: (columns...) ->
         for c in columns
-            col = @addAlias(c)
-            col[0].guessTable = @lastAlias
-
-            @columns.push(col)
+            col = @addWithAlias(c, @columns, @tableHint)
 
         return @
 
@@ -53,7 +48,7 @@ class SqlSelect
         return @
 
     from: (table) ->
-        @tables.push(table)
+        @addTable(table)
         return @
 
     join: (joinedTable) ->
@@ -72,6 +67,8 @@ class SqlSelect
     where: (w) ->
         @whereClause = new SqlPredicate(w)
         @lastPredicate = @whereClause
+        @fillTableHints()
+
         return @
 
     groupBy: (column) ->
@@ -81,6 +78,7 @@ class SqlSelect
     having: (c) ->
         @havingClause = new SqlPredicate(c)
         @lastPredicate = @havingClause
+        @fillTableHints()
         return @
 
     orderBy: (o) ->
@@ -89,11 +87,20 @@ class SqlSelect
 
     and: (c) ->
         @lastPredicate.and(c)
+        @fillTableHints()
         return @
 
     or: (c) ->
         @lastPredicate.or(c)
+        @fillTableHints()
         return @
+
+    fillTableHints: ->
+        return unless (hint = @tableHint)
+        @lastPredicate.cascade((n) ->
+            if (n instanceof SqlName && !n.prefixHint?)
+                n.prefixHint = hint
+        )
 
     toSql: (f) ->
         return f.select(@)
