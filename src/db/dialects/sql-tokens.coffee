@@ -38,7 +38,7 @@ class SqlRelop extends SqlToken
             left = SqlToken.nameOrExpr(left)
 
         if _.isArray(right)
-            relops.push(new SqlRelop(left, right))
+            relops.push(new SqlRelop(left, 'IN', right))
         else if _.isObject(right) && !(right instanceof SqlToken)
             for op, operand of right
                 relops.push(new SqlRelop(left, op, operand))
@@ -69,7 +69,6 @@ class SqlPredicate extends SqlToken
         else if _.isObject(term)
             for k, v of term
                 SqlRelop.pushRelops(k, v, pieces)
-
 
         if (pieces.length > 0)
             return if pieces.length == 1 then pieces[0] else new SqlAnd(pieces)
