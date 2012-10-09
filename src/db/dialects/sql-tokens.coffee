@@ -1,33 +1,19 @@
 _ = require('underscore')
 
+rgxExpression = "*+/-()"
+
 class SqlToken
-    @nameOrExpr: (s) ->
-        # MUST: implement some sort of indexOfAny and test against more operators
-        if _.contains(s, '*') || _.contains(s, '+')
-            return new SqlExpression(s)
-
-        return new SqlName(s)
-
+    @rgxExpression: /[()\+\*\-/]/
+    @nameOrExpr: (s) -> if @rgxExpression.test(s) then new SqlExpression(s) else new SqlName(s)
+    cascade: (fn) -> fn(@)
     toSql: () -> ''
 
-class SqlVerbatim
+class SqlVerbatim extends SqlToken
     constructor: (@s) ->
     toSql: -> @s
 
 class SqlExpression extends SqlVerbatim
     constructor: (@s) ->
-
-class SqlIdentifier extends SqlToken
-    constructor: (@columnName) ->
-
-    toSql: (formatter) ->
-        formatter.identifier(@)
-
-class SqlIdentifierGuess extends SqlIdentifier
-    constructor: (@given, @guessTable) ->
-
-    toSql: (formatter) ->
-        formatter.identifierGuess(@)
 
 class SqlName extends SqlToken
     constructor: (@n, @prefixHint) ->
@@ -39,86 +25,88 @@ class SqlMultiPartName extends SqlToken
 
 class SqlParens extends SqlToken
     constructor: (@contents) ->
+
+    cascade: (fn) ->
+        fn(@)
+        @contents.cascade(@)
+
     toSql: (f) -> f.parens(@contents)
 
 class SqlRelop extends SqlToken
-    @build: (left, right) ->
+    @pushRelops: (left, right, relops = []) ->
         if _.isString(left)
             left = SqlToken.nameOrExpr(left)
 
-        if _.isArray(v)
-            return new [SqlIn(left, right)]
+        if _.isArray(right)
+            relops.push(new SqlRelop(left, right))
         else if _.isObject(right) && !(right instanceof SqlToken)
-            return (
-                new SqlRelop(left, operand, op) for op, operand of right
-            )
+            for op, operand of right
+                relops.push(new SqlRelop(left, op, operand))
         else
-            return new [SqlEquals(left, right)]
+            relops.push(new SqlRelop(left, '=', right))
 
-    constructor: (@left, @right, @op) ->
-    toSql: (f) -> f.relop(@)
+    constructor: (@left, @op, @right) ->
 
-class SqlIn extends SqlRelop
-    constructor: (@left, @right) ->
-    toSql: (f) -> f.in(@)
+    cascade: (fn) ->
+        fn(@)
+        @left.cascade(fn)
+        @right.cascasde(fn)
 
-class SqlEquals extends SqlRelop
-    constructor: (@left, @right) ->
-    toSql: (f) -> f.equals(@left, @right)
+    toSql: (f) -> f.relop(@left, @op, @right)
 
 class SqlPredicate extends SqlToken
-    @wrap: (arg) ->
-        if arg instanceof SqlPredicate
-            return arg
+    @wrap: (term) ->
+        if term instanceof SqlToken
+            return term
 
-        if _.isString(arg)
-            return new SqlPredicate(new SqlParens(new SqlVerbatim(arg)))
+        if _.isString(term)
+            return new SqlParens(new SqlVerbatim(term))
 
-        if _.isObject(arg)
-            relops = []
+        pieces = []
 
-            for k, v of arg
-                relops.concat(SqlRelop.build(k, v))
-        if _.isArray(arg)
-            terms = (SqlPredicate.wrap(t) for t in arg)
-             
-
+        if _.isArray(term)
+            SqlRelop.pushRelops(term[0], term[1], pieces)
+        else if _.isObject(term)
+            for k, v of term
+                SqlRelop.pushRelops(k, v, pieces)
 
 
+        if (pieces.length > 0)
+            return if pieces.length == 1 then pieces[0] else new SqlAnd(pieces)
 
-        return t.toSql(@) if (t instanceof SqlPredicate)
-        return "(#{t})" if (_.isString(t))
-        return @predicateArray(t) if (_.isArray(t))
-        return @predicateObject(t) if (_.isObject(t))
-        throw new Error("Unsupported predicate " + t.toString())
+        throw new Error("Unsupported predicate term: " + t.toString())
 
-    constructor: (@expr) ->
+    constructor: (expr) -> @expr = SqlPredicate.wrap(expr)
 
+    append: (terms, connector) ->
+        if !(@expr instanceof connector)
+            @expr = new connector([@expr])
 
-    and: (w) ->
-        # SHOULD: Validate arguments
-        @expr = new SqlAnd(@expr, w)
+        for t in terms
+            @expr.terms.push(SqlPredicate.wrap(t))
+
         return @
 
-    or: (w) ->
-         # SHOULD: Validate arguments
-        @expr = new SqlOr(@expr, w)
-        return @
+    and: (terms...) -> @append(terms, SqlAnd)
+    or: (terms...) -> @append(terms, SqlOr)
 
-    toSql: (formatter) ->
-        return formatter.predicate(@expr)
+    cascade: (fn) ->
+        fn(@)
+        @expr.cascade(fn)
 
-class SqlAnd extends SqlPredicate
-    constructor: (@a, @b) ->
+    toSql: (f) -> @expr.toSql(f)
 
-    toSql: (formatter) ->
-        return formatter.and(@a, @b)
+class SqlBooleanOp extends SqlToken
+    constructor: (@terms) ->
+    cascade: (fn) ->
+        fn(@)
+        _.each(@terms, fn)
 
-class SqlOr extends SqlPredicate
-    constructor: (@a, @b) ->
+class SqlAnd extends SqlBooleanOp
+    toSql: (formatter) -> formatter.and(@terms)
 
-    toSql: (formatter) ->
-        return formatter.or(@a, @b)
+class SqlOr extends SqlBooleanOp
+    toSql: (formatter) -> formatter.or(@terms)
 
 class SqlLiteral extends SqlToken
     constructor: (@l) ->
@@ -126,9 +114,8 @@ class SqlLiteral extends SqlToken
 
 module.exports = {
     SqlPredicate: SqlPredicate
+    SqlExpression: SqlExpression
     SqlToken: SqlToken
-    SqlIdentifier: SqlIdentifier
-    SqlIdentifierGuess: SqlIdentifierGuess
     SqlName: SqlName
     SqlMultiPartName: SqlMultiPartName
 }

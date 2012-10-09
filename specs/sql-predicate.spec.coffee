@@ -1,17 +1,18 @@
 { SqlPredicate } = sql = require('../src/db/dialects/sql-grammar')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
+sys = require('sys')
+
 f = new SqlFormatter()
 
 assert = (sqlWhere, expected) ->
     ret = sqlWhere.toSql(f)
+    console.log(ret)
     ret.should.eql(expected)
 
 describe('SqlPredicate', () ->
     it('builds a predicate from an object', ->
         p = SqlPredicate.wrap({firstName: 'Ron', lastName: 'Weasley'})
-        
-
     )
 
     it('detects a SQL expression used as a column', () ->
@@ -20,14 +21,14 @@ describe('SqlPredicate', () ->
         assert(p, exp)
     )
 
-    it('allows a sql name in the rhs', () ->
+    it('allows a SQL name in the RHS', () ->
         p = sql.predicate( { "LastName": sql.name("FirstName")} )
         exp = "LastName = FirstName"
         assert(p, exp)
     )
 
     it('allows explicit SQL tokens in the LHS', () ->
-        p = sql.predicate(sql.expr("LEN(LastName)"), { ">": 10 })
+        p = sql.predicate([sql.expr("LEN(LastName)"), { ">": 10 }])
         exp = "LEN(LastName) > 10"
         assert(p, exp)
     )
@@ -36,7 +37,7 @@ describe('SqlPredicate', () ->
         p = sql.predicate({ age: 22, name: 'deividy' })
         p.and({ test: 123, testing: 1234 })
 
-        exp = "((age = 22 AND name = 'deividy')"
+        exp = "(age = 22 AND name = 'deividy'"
         exp += " AND (test = 123 AND testing = 1234))"
 
         assert(p, exp)
@@ -47,7 +48,7 @@ describe('SqlPredicate', () ->
         p.or({ test: 123, testing: 1234 }).and({ login: 'root'})
 
         exp = "(((age = 22 AND name = 'deividy') OR (test = 123 AND testing = 1234))"
-        exp += " AND (login = 'root'))"
+        exp += " AND login = 'root')"
 
         assert(p, exp)
     )
@@ -93,7 +94,7 @@ describe('SqlPredicate', () ->
     it('can AND together two OR groups, and use parens appropriately', () ->
         p = sql.predicate([{ age: 22, name: 'deividy' }, { age: 18, login: 'deividy' }])
         p.and([{ login: 'test', pass: 12 }, { login: 'test123', pass: 123 } ])
-
+        
         exp = "(((age = 22 AND name = 'deividy') OR (age = 18 AND login = 'deividy')) "
         exp += "AND ((login = 'test' AND pass = 12) OR (login = 'test123' AND pass = 123)))"
         assert(p, exp)

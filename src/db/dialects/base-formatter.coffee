@@ -1,89 +1,33 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken, SqlSelect } = require('./sql-grammar')
+{ SqlPredicate, SqlToken, SqlSelect, SqlExpression } = require('./sql-grammar')
 
 SqlIdentifier = SqlToken.SqlIdentifier
 
 class SqlFormatter
-    @f: (v) ->
-        if (_.isString(v))
-            return "'" + v.replace("'","''") + "'"
+    format: (v) ->
+        return v.toSql(@) if v instanceof SqlToken
+        return @literal(v)
 
-        return v.toString()
+    literal: (l) ->
+        if (_.isString(l))
+            return "'" + l.replace("'","''") + "'"
 
-    literal: (l) -> SqlFormatter.f(l)
-
-    format = SqlFormatter.f
-
-    operator: (key, op) ->
-        clauses = []
-        for k, v of op
-            if (k == 'between')
-                if (_.isArray(v) && v.length == 2)
-                    p = "#{key} BETWEEN #{format(v[0])} AND #{format(v[1])}"
-                    clauses.push(p)
-                else
-                    throw new Error("Invalid between clause")
-
-            else if (!_.isArray(v) && !_.isObject(v))
-                clauses.push("#{key} #{k} #{format(v)}")
-
-            else
-                throw new Error("Not suported arrays or objects inside an object")
-
-        return clauses.join(" AND ")
-
-    predicateObject: (obj) ->
-        clauses = []
-        for key, value of obj
-            # HACK: Need find another way to get tableAlias here
-            key = "#{@delimit(@tableAlias)}.#{@delimit(key)}" if (@tableAlias)
-            #
-            if(_.isArray(value))
-                values = _.reduce(value, (memo, val) ->
-                    return "#{memo}, #{format(val)}"
-                )
-                clauses.push("#{key} IN (#{values})")
-
-            else if (_.isObject(value))
-                clauses.push(@operator(key, value))
-            else
-                clauses.push("#{key} = #{format(value)}")
-
-        newClause = "(#{clauses.join(' AND ')})"
-
-        return newClause
+        return l.toString()
 
     parens: (contents) -> "(#{contents.toSql(@)})"
 
-    predicateArray: (arr) ->
-        clauses = []
-        for a in arr
-            clauses.push(@predicate(a))
+    relop: (left, op, right) ->
+        return "#{@format(left)} #{op} #{@format(right)}"
 
-        return "(#{clauses.join(' OR ')})"
+    and: (terms) ->
+        t = _.map(terms, ((t) -> @format(t)), @)
+        return "(#{t.join(" AND " )})"
 
+    or: (terms) ->
+        t = _.map(terms, ((t) -> @format(t)), @)
+        return "(#{t.join(" OR " )})"
 
-    predicate: (t) ->
-        return t.toSql(@) if (t instanceof SqlPredicate)
-        return "(#{t})" if (_.isString(t))
-        return @predicateArray(t) if (_.isArray(t))
-        return @predicateObject(t) if (_.isObject(t))
-        throw new Error("Unsupported predicate " + t.toString())
-
-
-    and: (a, b) ->
-        return "(#{@predicate(a)} AND #{@predicate(b)})"
-
-    or: (a, b) ->
-        return "(#{@predicate(a)} OR #{@predicate(b)})"
-
-    identifier: (c) -> "#{delimit(c.tableName)}.#{delimit(c.columnName)}"
-
-    identifierGuess: (c) ->
-        return "#{@delimit(c.guessTable)}.#{@delimit(c.given)}" if (c.guessTable?)
-        return @delimit(c.given)
-
-    name: (n) ->
+    name: (name) -> name.n
 
     delimit: (s) ->
         return "[#{s}]"
