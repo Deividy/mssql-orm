@@ -1,5 +1,33 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlStatement } = sql = require('./sql-tokens')
+{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./sql-tokens')
+
+class SqlAliasedExpression extends SqlToken
+    constructor: (a) ->
+        if _.isString(a)
+            @expr = @alias = a
+        else if _.isArray(a)
+            [@expr, @alias] = a
+        else
+            @expr = a
+
+class SqlColumnExpression extends SqlAliasedExpression
+    constructor: (a, prefixHint) ->
+        super(a)
+        if _.isString(@expr)
+            @expr = sql.nameOrExpr(@expr, prefixHint)
+
+    toSql: (f) -> f.column(@)
+
+class SqlFromExpression extends SqlAliasedExpression
+    constructor: (a) ->
+        super(a)
+        if _.isString(@expr)
+            @expr = sql.name(@expr)
+
+    toSql: (f) -> f.from(@)
+
+class SqlJoin extends SqlFromExpression
+    toSql: (f) -> f.join(@)
 
 class SqlSelect extends SqlStatement
     constructor: (tableList...) ->
@@ -22,12 +50,13 @@ class SqlSelect extends SqlStatement
         return r
 
     addTable: (t) ->
-        table = @addWithAlias(t, @tables)
-        @tableHint = table[1] if (table[1]?)
+        table = new SqlFromExpression(t)
+        @tables.push(table)
+        @tableHint = table.alias || @tableHint
 
     select: (columns...) ->
         for c in columns
-            col = @addWithAlias(c, @columns, @tableHint)
+            @columns.push(new SqlColumnExpression(c, @tableHint))
 
         return @
 

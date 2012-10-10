@@ -57,26 +57,30 @@ class SqlFormatter
     delimit: (s) ->
         return "[#{s}]"
 
-    formatAlias: (c) ->
-        column = c[0]
-        alias = c[1]
+    column: (c) ->
+        expr = c.expr
+        alias = c.alias
 
-        if (column instanceof SqlSelect)
-            s = "(#{@select(column)})"
+        if (expr instanceof SqlSelect)
+            s = "(#{@select(expr)})"
         
-        s = column.toSql(@)
+        s = expr.toSql(@)
 
         s += " as #{@delimit(alias)}" if (alias?)
         return s
 
     columns: (columnList) ->
         return "*" if (columnList.length == 0)
-        cols = (@formatAlias(c) for c in columnList)
+        cols = (c.toSql(@) for c in columnList)
         return cols.join(", ")
 
     tables: (tableList) ->
-        tables = (@formatAlias(t) for t in tableList)
+        tables = (t.toSql(@) for t in tableList)
         return tables.join(", ")
+
+    from: (f) -> @column(f)
+    join: (j) ->
+        str = @column(j) + " ON " + j.predicate.toSql(@)
 
     select: (c) ->
         ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"

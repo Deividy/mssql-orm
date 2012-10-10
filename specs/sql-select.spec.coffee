@@ -3,9 +3,6 @@ SqlFormatter = require('../src/db/dialects/base-formatter')
 
 h = require('./test-helper')
 
-f = new SqlFormatter()
-debug = false
-
 describe('SqlSelect builds select SQL expression', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
@@ -17,8 +14,6 @@ describe('SqlSelect builds select SQL expression', () ->
                 .select("login", [ 'zid', 'id' ], [ 'zname', 'name' ])
                 .where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
-
-        #console.log require('sys').inspect(s, true, 5)
 
         exp = "SELECT [users].[login] as [login], [users].[zid] as [id], [users].[zname] as [name] "
         exp += "FROM [users] as [users] "
