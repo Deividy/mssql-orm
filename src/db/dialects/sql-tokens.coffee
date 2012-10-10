@@ -28,6 +28,10 @@ class SqlVerbatim extends SqlToken
 class SqlExpression extends SqlVerbatim
     constructor: (@s) ->
 
+class SqlLiteral extends SqlToken
+    constructor: (@l) ->
+    toSql: (f) -> f.literal(@l)
+
 class SqlName extends SqlToken
     constructor: (@name, @prefixHint) ->
     toSql: (f) -> f.name(@)
@@ -106,12 +110,7 @@ class SqlAnd extends SqlBooleanOp
 class SqlOr extends SqlBooleanOp
     toSql: (formatter) -> formatter.or(@terms)
 
-class SqlLiteral extends SqlToken
-    constructor: (@l) ->
-    toSql: (f) -> f.literal(@l)
-
-
-
+class SqlStatement extends SqlToken
 
 module.exports = {
     SqlToken: SqlToken
@@ -121,6 +120,7 @@ module.exports = {
     SqlPredicate: SqlPredicate
     SqlAnd: SqlAnd
     SqlOr: SqlOr
+    SqlStatement: SqlStatement
 
     verbatim: (s) -> new SqlVerbatim(s)
     predicate: (p) -> new SqlPredicate(p)

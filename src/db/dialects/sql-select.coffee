@@ -1,7 +1,7 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName } = sql = require('./sql-tokens')
+{ SqlPredicate, SqlName, SqlStatement } = sql = require('./sql-tokens')
 
-class SqlSelect
+class SqlSelect extends SqlStatement
     constructor: (tableList...) ->
         @columns = []
         @tables = []
@@ -66,7 +66,6 @@ class SqlSelect
 
     where: (w) ->
         @whereClause = @addTerm(@whereClause, w)
-        @fillTableHints()
         return @
 
     groupBy: (column) ->
@@ -75,7 +74,6 @@ class SqlSelect
 
     having: (c) ->
         @havingClause = @addTerm(@havingClause, c)
-        @fillTableHints()
         return @
 
     addTerm: (p, c) ->
@@ -85,6 +83,7 @@ class SqlSelect
             p = new SqlPredicate(c)
 
         @lastPredicate = p
+        @fillTableHints()
         return p
 
 
@@ -105,6 +104,7 @@ class SqlSelect
     fillTableHints: ->
         return unless (hint = @tableHint)
         @lastPredicate.cascade((n) ->
+            return false if (n instanceof SqlSelect)
             if (n instanceof SqlName && !n.prefixHint?)
                 n.prefixHint = hint
         )
