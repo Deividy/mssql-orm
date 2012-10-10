@@ -87,18 +87,21 @@ class SqlSelect extends SqlStatement
 
     and: (terms...) ->
         return @where(terms...) unless @lastPredicate
+
         @lastPredicate.and(terms...)
         @fillTableHints()
         return @
 
     or: (terms...) ->
         return @where(sql.or(terms...)) unless @lastPredicate
+
         @lastPredicate.or(terms...)
         @fillTableHints()
         return @
 
     fillTableHints: ->
         return unless (hint = @tableHint)
+
         @lastPredicate.cascade((n) ->
             return false if (n instanceof SqlSelect)
             if (n instanceof SqlName && !n.prefixHint?)
