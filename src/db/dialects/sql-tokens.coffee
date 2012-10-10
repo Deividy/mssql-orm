@@ -1,8 +1,23 @@
 _ = require('underscore')
 
-rgxExpression = /[()\+\*\-/]/
-nameOrExpr = (s, prefixHint) ->
-    if rgxExpression.test(s) then new SqlExpression(s) else new SqlName(s, prefixHint)
+sql = {
+    rgxExpression: /[()\+\*\-/]/
+
+    nameOrExpr: (s, prefixHint) ->
+        if sql.rgxExpression.test(s) then sql.expr(s) else sql.name(s, prefixHint)
+
+    verbatim: (s) -> new SqlVerbatim(s)
+    predicate: (p) -> new SqlPredicate(p)
+
+    name: (n, prefixHint) ->
+        return n if n instanceof SqlToken
+        return new SqlMultiPartName(n) if _.isArray(n)
+        return new SqlName(n, prefixHint)
+
+    expr: (e) -> new SqlExpression(e)
+    and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
+    or: (terms...) -> new SqlOr(_.map(terms, SqlPredicate.wrap))
+}
 
 class SqlToken
     cascade: (fn) ->
@@ -48,7 +63,7 @@ class SqlParens extends SqlToken
 class SqlRelop extends SqlToken
     @pushRelops: (left, right, relops = []) ->
         if _.isString(left)
-            left = nameOrExpr(left)
+            left = sql.nameOrExpr(left)
 
         if _.isArray(right)
             relops.push(new SqlRelop(left, 'IN', right))
@@ -111,8 +126,11 @@ class SqlOr extends SqlBooleanOp
     toSql: (formatter) -> formatter.or(@terms)
 
 class SqlStatement extends SqlToken
-
-module.exports = {
+    constructor: (table) ->
+        @
+        
+module.exports = sql
+_.extend(sql, {
     SqlToken: SqlToken
     SqlExpression: SqlExpression
     SqlName: SqlName
@@ -121,17 +139,4 @@ module.exports = {
     SqlAnd: SqlAnd
     SqlOr: SqlOr
     SqlStatement: SqlStatement
-
-    verbatim: (s) -> new SqlVerbatim(s)
-    predicate: (p) -> new SqlPredicate(p)
-    name: (n, prefixHint) ->
-        return new SqlMultiPartName(n) if _.isArray(n)
-        return new SqlName(n, prefixHint)
-
-    expr: (e) -> new SqlExpression(e)
-    
-    nameOrExpr: nameOrExpr
-
-    and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
-    or: (terms...) -> new SqlOr(_.map(terms, SqlPredicate.wrap))
-}
+})
