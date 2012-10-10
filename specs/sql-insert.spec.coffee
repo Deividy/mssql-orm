@@ -1,12 +1,10 @@
 { SqlInsert } = sql = require('../src/db/dialects/sql-grammar')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
-
-f = new SqlFormatter()
-debug = false
+h = require('./test-helper')
 
 describe('SqlInsert', () ->
-    it('can be instantiated', ->
-        new SqlInsert()
+    it('works for a basic statement', ->
+        h.assert(sql.insert("MyTable"), 'INSERT [MyTable]', false)
     )
 )

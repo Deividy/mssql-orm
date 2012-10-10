@@ -1,12 +1,10 @@
 { SqlUpdate } = sql = require('../src/db/dialects/sql-grammar')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
-
-f = new SqlFormatter()
-debug = false
+h = require('./test-helper')
 
 describe('SqlUpdate', () ->
-    it('can be instantiated', ->
-        sql.update("MyTable")
+    it('works for a basic statement', ->
+        h.assert(sql.update("MyTable"), 'UPDATE [MyTable]', false)
     )
 )

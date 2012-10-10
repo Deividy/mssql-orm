@@ -1,12 +1,10 @@
 { SqlDelete } = sql = require('../src/db/dialects/sql-grammar')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
-
-f = new SqlFormatter()
-debug = false
+h = require('./test-helper')
 
 describe('SqlDelete', () ->
-    it('can be instantiated', ->
-        sql.delete("MyTable")
+    it('works for a basic statement', ->
+        h.assert(sql.delete("MyTable"), 'DELETE FROM [MyTable]', false)
     )
 )

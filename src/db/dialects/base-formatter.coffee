@@ -9,7 +9,7 @@ rgxParseName = ///
 ///g
 
 class SqlFormatter
-    format: (v) ->
+    f: (v) ->
         return v.toSql(@) if v instanceof SqlToken
         return @literal(v)
 
@@ -25,18 +25,18 @@ class SqlFormatter
         # MUST: replace with data driven approach
         op = op.toUpperCase()
         r = switch op
-            when 'IN' then "(#{@format(right)})"
-            when 'BETWEEN' then "#{@format(right[0])} AND #{@format(right[1])}"
-            else @format(right)
+            when 'IN' then "(#{@f(right)})"
+            when 'BETWEEN' then "#{@f(right[0])} AND #{@f(right[1])}"
+            else @f(right)
 
-        return "#{@format(left)} #{op} #{r}"
+        return "#{@f(left)} #{op} #{r}"
 
     and: (terms) ->
-        t = _.map(terms, @format, @)
+        t = _.map(terms, @f, @)
         return "(#{t.join(" AND " )})"
 
     or: (terms) ->
-        t = _.map(terms, @format, @)
+        t = _.map(terms, @f, @)
         return "(#{t.join(" OR " )})"
 
     name: (n) ->
@@ -92,5 +92,17 @@ class SqlFormatter
     getWhere: (c) ->
         return " WHERE #{(c.whereClause.toSql(@))}" if (c.whereClause?)
         return ""
+
+    insert: (i) ->
+        return "INSERT #{@f(i.targetTable)}"
+
+    update: (u) ->
+        return "UPDATE #{@f(u.targetTable)}"
+
+    delete: (d) ->
+        return "DELETE FROM #{@f(d.targetTable)}"
+
+p = SqlFormatter.prototype
+p.format = p.f
 
 module.exports = SqlFormatter
