@@ -64,39 +64,35 @@ class SqlSelect extends SqlStatement
 
     joinType: (@jType) ->
 
-    where: (w) ->
-        @whereClause = @addTerm(@whereClause, w)
+    where: (terms...) ->
+        @whereClause = @addTerms(@whereClause, terms)
         return @
 
     groupBy: (column) ->
         (@groupByColumns ?= []).push(column)
         return @
 
-    having: (c) ->
-        @havingClause = @addTerm(@havingClause, c)
+    having: (terms...) ->
+        @havingClause = @addTerms(@havingClause, terms)
         return @
 
-    addTerm: (p, c) ->
-        if p?
-            p.and(c)
-        else
-            p = new SqlPredicate(c)
-
-        @lastPredicate = p
+    addTerms: (predicate, terms) ->
+        @lastPredicate = SqlPredicate.addOrCreate(predicate, terms)
         @fillTableHints()
-        return p
-
+        return @lastPredicate
 
     orderBy: (o) ->
         # MUST: implement
         return @
 
     and: (terms...) ->
+        return @where(terms...) unless @lastPredicate
         @lastPredicate.and(terms...)
         @fillTableHints()
         return @
 
     or: (terms...) ->
+        return @where(sql.or(terms...)) unless @lastPredicate
         @lastPredicate.or(terms...)
         @fillTableHints()
         return @

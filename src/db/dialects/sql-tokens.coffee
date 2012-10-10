@@ -7,7 +7,7 @@ sql = {
         if sql.rgxExpression.test(s) then sql.expr(s) else sql.name(s, prefixHint)
 
     verbatim: (s) -> new SqlVerbatim(s)
-    predicate: (p) -> new SqlPredicate(p)
+    predicate: (p...) -> new SqlPredicate(p)
 
     name: (n, prefixHint) ->
         return n if n instanceof SqlToken
@@ -98,7 +98,19 @@ class SqlPredicate extends SqlToken
 
         throw new Error("Unsupported predicate term: " + t.toString())
 
-    constructor: (expr) -> @expr = SqlPredicate.wrap(expr)
+    @addOrCreate: (predicate, terms) ->
+        if predicate?
+            predicate.and(terms...)
+        else
+            predicate = new SqlPredicate(terms)
+
+        return predicate
+
+    constructor: (terms) ->
+        if (terms.length > 1)
+            @expr = sql.and(terms...)
+        else
+            @expr = SqlPredicate.wrap(terms[0])
 
     append: (terms, connector) ->
         if !(@expr instanceof connector)
@@ -126,8 +138,22 @@ class SqlOr extends SqlBooleanOp
     toSql: (formatter) -> formatter.or(@terms)
 
 class SqlStatement extends SqlToken
-    constructor: (table) ->
-        @
+    constructor: (table) -> @targetTable = sql.name(table)
+
+class SqlFilteredStatement extends SqlStatement
+    where: (terms...) ->
+        @whereClause = SqlPredicate.addOrCreate(@whereClause, terms)
+        return @
+
+    and: (terms...) ->
+        return @where(terms...) unless @whereClause
+        @whereClause.and(terms...)
+        return @
+
+    or: (terms...) ->
+        return @where(sql.or(terms...)) unless @whereClause
+        @whereClause.or(terms...)
+        return @
         
 module.exports = sql
 _.extend(sql, {
@@ -139,4 +165,5 @@ _.extend(sql, {
     SqlAnd: SqlAnd
     SqlOr: SqlOr
     SqlStatement: SqlStatement
+    SqlFilteredStatement: SqlFilteredStatement
 })
