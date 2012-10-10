@@ -41,18 +41,6 @@ class SqlSelect extends SqlStatement
 
         (@from(t) for t in tableList)
 
-    addWithAlias: (o, a, prefixHint) ->
-        if (_.isArray(o))
-            r = o
-        else if (_.isString(o))
-            r = [ o, o ]
-        else
-            r = [ o ]
-
-        (r[0] = sql.nameOrExpr(r[0], prefixHint)) if _.isString(r[0])
-        a.push(r)
-        return r
-
     addFrom: (table, a) ->
         a.push(table)
         @tableHint = table.alias || @tableHint
