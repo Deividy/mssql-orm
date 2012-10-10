@@ -36,4 +36,16 @@ describe('SqlSelect builds select SQL expression', () ->
 
         h.assert(s, exp)
     )
+
+    it('supports JOINS', () ->
+        s = sql.from(['users', 'u'])
+            .select("login", [ 'zid', 'id' ], [ 'zname', 'name' ])
+            .join("messages", { "U.id": sql.name("Messages.UserId")})
+
+        exp = "SELECT [u].[login] as [login], [u].[zid] as [id], [u].[zname] as [name] "
+        exp += "FROM [users] as [u] INNER JOIN [messages] as [messages] ON "
+        exp += "[U].[id] = [Messages].[UserId]"
+
+        h.assert(s, exp, false)
+    )
 )

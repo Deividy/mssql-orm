@@ -78,13 +78,19 @@ class SqlFormatter
         tables = (t.toSql(@) for t in tableList)
         return tables.join(", ")
 
+    joins: (joinList) ->
+        return '' unless joinList.length > 0
+        joins = (j.toSql(@) for j in joinList)
+        return joins.join(" ")
+
     from: (f) -> @column(f)
     join: (j) ->
-        str = @column(j) + " ON " + j.predicate.toSql(@)
+        str = " INNER JOIN " + @column(j) + " ON " + j.predicate.toSql(@)
 
     select: (c) ->
         ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
 
+        ret += @joins(c.joins)
         ret += @getWhere(c)
         ret += @getHaving(c)
         return ret

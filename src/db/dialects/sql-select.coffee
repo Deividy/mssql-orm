@@ -10,7 +10,7 @@ class SqlAliasedExpression extends SqlToken
         else
             @expr = a
 
-class SqlColumnExpression extends SqlAliasedExpression
+class SqlColumn extends SqlAliasedExpression
     constructor: (a, prefixHint) ->
         super(a)
         if _.isString(@expr)
@@ -18,7 +18,7 @@ class SqlColumnExpression extends SqlAliasedExpression
 
     toSql: (f) -> f.column(@)
 
-class SqlFromExpression extends SqlAliasedExpression
+class SqlFrom extends SqlAliasedExpression
     constructor: (a) ->
         super(a)
         if _.isString(@expr)
@@ -26,7 +26,11 @@ class SqlFromExpression extends SqlAliasedExpression
 
     toSql: (f) -> f.from(@)
 
-class SqlJoin extends SqlFromExpression
+class SqlJoin extends SqlFrom
+    constructor: (a, terms) ->
+        super(a)
+        @predicate = new SqlPredicate(terms)
+
     toSql: (f) -> f.join(@)
 
 class SqlSelect extends SqlStatement
@@ -35,7 +39,7 @@ class SqlSelect extends SqlStatement
         @tables = []
         @joins = []
 
-        (@addTable(t) for t in tableList)
+        (@from(t) for t in tableList)
 
     addWithAlias: (o, a, prefixHint) ->
         if (_.isArray(o))
@@ -49,14 +53,13 @@ class SqlSelect extends SqlStatement
         a.push(r)
         return r
 
-    addTable: (t) ->
-        table = new SqlFromExpression(t)
-        @tables.push(table)
+    addFrom: (table, a) ->
+        a.push(table)
         @tableHint = table.alias || @tableHint
 
     select: (columns...) ->
         for c in columns
-            @columns.push(new SqlColumnExpression(c, @tableHint))
+            @columns.push(new SqlColumn(c, @tableHint))
 
         return @
 
@@ -77,21 +80,13 @@ class SqlSelect extends SqlStatement
         return @
 
     from: (table) ->
-        @addTable(table)
+        @addFrom(new SqlFrom(table), @tables)
         return @
 
-    join: (joinedTable) ->
-        @joins.push(joinedTable) if (joinedTable instanceof SqlSelect)
+    join: (table, terms...) ->
+        @lastJoin = new SqlJoin(table, terms)
+        @addFrom(@lastJoin, @joins)
         return @
-
-    joinOn: (@jOn...) ->
-        ###
-            [
-                [ 'users', 'users_id', 'msgs_id' ]
-            ]
-        ###
-
-    joinType: (@jType) ->
 
     where: (terms...) ->
         @whereClause = @addTerms(@whereClause, terms)
