@@ -5,7 +5,20 @@ nameOrExpr = (s, prefixHint) ->
     if rgxExpression.test(s) then new SqlExpression(s) else new SqlName(s, prefixHint)
 
 class SqlToken
-    cascade: (fn) -> fn(@)
+    cascade: (fn) ->
+        return if fn(@) == false
+
+        children = @getChildren()
+        return unless children
+
+        for c in children
+            if (c instanceof SqlToken)
+                c.cascade(fn)
+            else
+                fn(c)
+
+    getChildren: (fn) -> null
+
     toSql: () -> ''
 
 class SqlVerbatim extends SqlToken
@@ -25,11 +38,7 @@ class SqlMultiPartName extends SqlToken
 
 class SqlParens extends SqlToken
     constructor: (@contents) ->
-
-    cascade: (fn) ->
-        fn(@)
-        @contents.cascade(@)
-
+    getChildren: -> [@contents]
     toSql: (f) -> f.parens(@contents)
 
 class SqlRelop extends SqlToken
@@ -46,12 +55,7 @@ class SqlRelop extends SqlToken
             relops.push(new SqlRelop(left, '=', right))
 
     constructor: (@left, @op, @right) ->
-
-    cascade: (fn) ->
-        fn(@)
-        @left.cascade(fn) if @left instanceof SqlToken
-        @right.cascasde(fn) if @right instanceof SqlToken
-
+    getChildren: -> [@left, @right]
     toSql: (f) -> f.relop(@left, @op, @right)
 
 class SqlPredicate extends SqlToken
@@ -89,17 +93,12 @@ class SqlPredicate extends SqlToken
     and: (terms...) -> @append(terms, SqlAnd)
     or: (terms...) -> @append(terms, SqlOr)
 
-    cascade: (fn) ->
-        fn(@)
-        @expr.cascade(fn)
-
+    getChildren: -> [@expr]
     toSql: (f) -> @expr.toSql(f)
 
 class SqlBooleanOp extends SqlToken
     constructor: (@terms) ->
-    cascade: (fn) ->
-        fn(@)
-        _.each(@terms, (t) -> t.cascade(fn))
+    getChildren: () -> @terms
 
 class SqlAnd extends SqlBooleanOp
     toSql: (formatter) -> formatter.and(@terms)

@@ -65,10 +65,8 @@ class SqlSelect
     joinType: (@jType) ->
 
     where: (w) ->
-        @whereClause = new SqlPredicate(w)
-        @lastPredicate = @whereClause
+        @whereClause = @addTerm(@whereClause, w)
         @fillTableHints()
-
         return @
 
     groupBy: (column) ->
@@ -76,22 +74,31 @@ class SqlSelect
         return @
 
     having: (c) ->
-        @havingClause = new SqlPredicate(c)
-        @lastPredicate = @havingClause
+        @havingClause = @addTerm(@havingClause, c)
         @fillTableHints()
         return @
+
+    addTerm: (p, c) ->
+        if p?
+            p.and(c)
+        else
+            p = new SqlPredicate(c)
+
+        @lastPredicate = p
+        return p
+
 
     orderBy: (o) ->
         # MUST: implement
         return @
 
-    and: (c) ->
-        @lastPredicate.and(c)
+    and: (terms...) ->
+        @lastPredicate.and(terms...)
         @fillTableHints()
         return @
 
-    or: (c) ->
-        @lastPredicate.or(c)
+    or: (terms...) ->
+        @lastPredicate.or(terms...)
         @fillTableHints()
         return @
 
