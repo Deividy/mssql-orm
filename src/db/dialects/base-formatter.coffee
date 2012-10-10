@@ -108,10 +108,14 @@ class SqlFormatter
         return "INSERT #{@f(i.targetTable)}"
 
     update: (u) ->
-        return "UPDATE #{@f(u.targetTable)}"
+        ret = "UPDATE #{@f(u.targetTable)}"
+        ret += @where(u)
+        return ret
 
     delete: (d) ->
-        return "DELETE FROM #{@f(d.targetTable)}"
+        ret = "DELETE FROM #{@f(d.targetTable)}"
+        ret += @where(d)
+        return ret
 
 p = SqlFormatter.prototype
 p.format = p.f
