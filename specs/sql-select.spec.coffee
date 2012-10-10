@@ -3,7 +3,7 @@ SqlFormatter = require('../src/db/dialects/base-formatter')
 
 h = require('./test-helper')
 
-describe('SqlSelect builds select SQL expression', () ->
+describe('SqlSelect', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
         h.assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
@@ -20,7 +20,7 @@ describe('SqlSelect builds select SQL expression', () ->
         exp += "WHERE ([users].[age] = 22 AND [users].[name] = 'deividy' "
         exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
 
-        h.assert(s, exp)
+        h.assert(s, exp, false)
     )
 
     it('supports table aliases', () ->
@@ -47,5 +47,18 @@ describe('SqlSelect builds select SQL expression', () ->
         exp += "[U].[id] = [Messages].[UserId]"
 
         h.assert(s, exp, false)
+    )
+
+    it('supports ORDER BY and GROUP BY', () ->
+        s = sql.from(['users', 'u'])
+            .select("login")
+            .orderBy('name', 'LEN(LastName)', ["JoinDate", 'DESC'])
+            .groupBy('City', 'Foo + Bar')
+
+        exp = "SELECT [u].[login] as [login] FROM [users] as [u] "
+        exp += "GROUP BY [0].[City], Foo + Bar "
+        exp += "ORDER BY [u].[name] DESC, LEN(LastName) DESC, [u].[JoinDate] DESC"
+
+        h.assert(s, exp, true)
     )
 )

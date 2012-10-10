@@ -69,19 +69,18 @@ class SqlFormatter
         s += " as #{@delimit(alias)}" if (alias?)
         return s
 
+    doList: (collection, separator = ', ', prelude = '') ->
+        return '' unless collection?.length > 0
+        results = (i.toSql(@) for i in collection)
+        return prelude + results.join(separator)
+
     columns: (columnList) ->
         return "*" if (columnList.length == 0)
-        cols = (c.toSql(@) for c in columnList)
-        return cols.join(", ")
+        return @doList(columnList)
 
-    tables: (tableList) ->
-        tables = (t.toSql(@) for t in tableList)
-        return tables.join(", ")
+    tables: (tableList) -> @doList(tableList)
 
-    joins: (joinList) ->
-        return '' unless joinList.length > 0
-        joins = (j.toSql(@) for j in joinList)
-        return joins.join(" ")
+    joins: (joinList) -> @doList(joinList, ' ')
 
     from: (f) -> @column(f)
     join: (j) ->
@@ -91,17 +90,19 @@ class SqlFormatter
         ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
 
         ret += @joins(c.joins)
-        ret += @getWhere(c)
-        ret += @getHaving(c)
+        ret += @where(c)
+        ret += @groupBy(c)
+        ret += @orderBy(c)
         return ret
 
-    getHaving: (c) ->
-        return " HAVING #{@predicate(c.havingClause)}" if (c.havingClause?)
-        return ""
-
-    getWhere: (c) ->
+    where: (c) ->
         return " WHERE #{(c.whereClause.toSql(@))}" if (c.whereClause?)
         return ""
+
+    groupBy: (c) -> @doList(c.groupings, ', ', ' GROUP BY ')
+
+    orderBy: (c) -> @doList(c.orderings, ', ', ' ORDER BY ')
+    ordering: (o) -> "#{o.expr.toSql(@)} #{o.direction}"
 
     insert: (i) ->
         return "INSERT #{@f(i.targetTable)}"

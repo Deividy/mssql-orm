@@ -13,8 +13,7 @@ class SqlAliasedExpression extends SqlToken
 class SqlColumn extends SqlAliasedExpression
     constructor: (a, prefixHint) ->
         super(a)
-        if _.isString(@expr)
-            @expr = sql.nameOrExpr(@expr, prefixHint)
+        @expr = sql.nameOrExpr(@expr, prefixHint)
 
     toSql: (f) -> f.column(@)
 
@@ -32,6 +31,13 @@ class SqlJoin extends SqlFrom
         @predicate = new SqlPredicate(terms)
 
     toSql: (f) -> f.join(@)
+
+class SqlOrdering extends SqlFrom
+    constructor: (expr, direction, tableHint) ->
+        @expr = sql.nameOrExpr(expr, tableHint)
+        @direction = if direction = 'DESC' then 'DESC' else 'ASC'
+
+    toSql: (f) -> f.ordering(@)
 
 class SqlSelect extends SqlStatement
     constructor: (tableList...) ->
@@ -80,8 +86,10 @@ class SqlSelect extends SqlStatement
         @whereClause = @addTerms(@whereClause, terms)
         return @
 
-    groupBy: (column) ->
-        (@groupByColumns ?= []).push(column)
+    groupBy: (exprs...) ->
+        @groupings ?= []
+
+        @groupings.push( (_.map(exprs, sql.nameOrExpr))... )
         return @
 
     having: (terms...) ->
@@ -93,8 +101,15 @@ class SqlSelect extends SqlStatement
         @fillTableHints()
         return @lastPredicate
 
-    orderBy: (o) ->
-        # MUST: implement
+    orderBy: (exprs...) ->
+        @orderings ?= []
+        for e in exprs
+            if _.isArray(e)
+                o = new SqlOrdering(e[0], e[1], @tableHint)
+            else
+                o = new SqlOrdering(e, null, @tableHint)
+
+            @orderings.push(o)
         return @
 
     and: (terms...) ->

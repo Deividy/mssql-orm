@@ -4,6 +4,7 @@ sql = {
     rgxExpression: /[()\+\*\-/]/
 
     nameOrExpr: (s, prefixHint) ->
+        return s if s instanceof SqlToken
         if sql.rgxExpression.test(s) then sql.expr(s) else sql.name(s, prefixHint)
 
     verbatim: (s) -> new SqlVerbatim(s)
@@ -147,11 +148,13 @@ class SqlFilteredStatement extends SqlStatement
 
     and: (terms...) ->
         return @where(terms...) unless @whereClause
+
         @whereClause.and(terms...)
         return @
 
     or: (terms...) ->
         return @where(sql.or(terms...)) unless @whereClause
+
         @whereClause.or(terms...)
         return @
         
