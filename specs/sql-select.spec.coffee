@@ -1,25 +1,15 @@
 sql = require('../src/db/dialects/sql-grammar')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
+h = require('./test-helper')
 
 f = new SqlFormatter()
 debug = false
 
-assert = (sqlSelect, expected) ->
-    ret = sqlSelect.toSql(f)
-    if debug
-        console.log("--- Return ---")
-        console.log("'#{ret}'")
-        console.log("---")
-        console.log("--- Expected ---")
-        console.log(expected)
-        console.log("---")
-    ret.should.eql(expected)
-
 describe('SqlSelect builds select SQL expression', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
-        assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
+        h.assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
     )
 
     it('handles two objects ANDed', () ->
@@ -35,7 +25,7 @@ describe('SqlSelect builds select SQL expression', () ->
         exp += "WHERE ([users].[age] = 22 AND [users].[name] = 'deividy' "
         exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
 
-        assert(s, exp)
+        h.assert(s, exp)
     )
 
     it('supports table aliases', () ->
@@ -49,6 +39,6 @@ describe('SqlSelect builds select SQL expression', () ->
         exp += "WHERE (([u].[age] = 22 AND [u].[name] = 'deividy') "
         exp += "OR ([u].[test] = 123 AND [u].[testing] = 1234))"
 
-        assert(s, exp)
+        h.assert(s, exp)
     )
 )
