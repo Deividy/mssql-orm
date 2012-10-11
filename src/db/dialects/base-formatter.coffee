@@ -108,9 +108,12 @@ class SqlFormatter
         return "INSERT #{@f(i.targetTable)}"
 
     update: (u) ->
-        ret = "UPDATE #{@f(u.targetTable)}"
+        ret = "UPDATE #{@f(u.targetTable)} SET "
+        ret += @doList(u.exprs)
         ret += @where(u)
         return ret
+
+    updateExpr: (e) -> "#{@f(e.column)} = #{@f(e.value)}"
 
     delete: (d) ->
         ret = "DELETE FROM #{@f(d.targetTable)}"

@@ -139,7 +139,11 @@ class SqlOr extends SqlBooleanOp
     toSql: (formatter) -> formatter.or(@terms)
 
 class SqlStatement extends SqlToken
-    constructor: (table) -> @targetTable = sql.name(table)
+    constructor: (table) ->
+        @targetTable = sql.name(table)
+        @init()
+
+    init: () ->
 
 class SqlFilteredStatement extends SqlStatement
     where: (terms...) ->
@@ -170,3 +174,5 @@ _.extend(sql, {
     SqlStatement: SqlStatement
     SqlFilteredStatement: SqlFilteredStatement
 })
+
+require('./sql-update')

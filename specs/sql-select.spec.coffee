@@ -59,6 +59,6 @@ describe('SqlSelect', () ->
         exp += "GROUP BY [0].[City], Foo + Bar "
         exp += "ORDER BY [u].[name] DESC, LEN(LastName) DESC, [u].[JoinDate] DESC"
 
-        h.assert(s, exp, true)
+        h.assert(s, exp, false)
     )
 )
