@@ -161,7 +161,7 @@ class SqlFilteredStatement extends SqlStatement
 
         @whereClause.or(terms...)
         return @
-        
+
 module.exports = sql
 _.extend(sql, {
     SqlToken: SqlToken

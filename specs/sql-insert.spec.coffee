@@ -7,4 +7,9 @@ describe('SqlInsert', () ->
     it('works for a basic statement', ->
         h.assert(sql.insert("MyTable"), 'INSERT [MyTable]', false)
     )
+
+    it('should generate a insert statement', () ->
+        ret = "INSERT [MyTable] (name) VALUES ('test')"
+        h.assert(sql.insert("MyTable").data({ name: 'test' }), ret, false)
+    )
 )
