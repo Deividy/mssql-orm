@@ -9,15 +9,33 @@ rgxParseName = ///
 ///g
 
 class SqlFormatter
-    f: (v) ->
-        return v.toSql(@) if v instanceof SqlToken
-        return @literal(v)
+    _delimit = (s) -> "[#{s}]"
 
-    literal: (l) ->
+    _literal = (l) ->
         if (_.isString(l))
             return "'" + l.replace("'","''") + "'"
 
         return l.toString()
+
+    _names = (names) -> _.map(names, (p) -> "[#{p}]").join(".")
+
+    _parseName = (name) ->
+        parts = []
+        while (match = rgxParseName.exec(name))
+            parts.push(match[1])
+        return parts
+
+    name: (n) ->
+        parts = _parseName(n.name)
+        if (parts.length == 1 && n.prefixHint?)
+            parts.unshift(n.prefixHint)
+        return _names(parts)
+
+    multiPartName: (m) -> _names(m.parts)
+
+    f: (v) ->
+        return v.toSql(@) if v instanceof SqlToken
+        return _literal(v)
 
     parens: (contents) -> "(#{contents.toSql(@)})"
 
@@ -39,34 +57,16 @@ class SqlFormatter
         t = _.map(terms, @f, @)
         return "(#{t.join(" OR " )})"
 
-    name: (n) ->
-        parts = @parseName(n.name)
-        if (parts.length == 1 && n.prefixHint?)
-            parts.unshift(n.prefixHint)
-        return @names(parts)
-
-    multiPartName: (m) -> @names(m.parts)
-    names: (names) -> _.map(names, (p) -> "[#{p}]").join(".")
-
-    parseName: (name) ->
-        parts = []
-        while (match = rgxParseName.exec(name))
-            parts.push(match[1])
-        return parts
-
-    delimit: (s) ->
-        return "[#{s}]"
-
     column: (c) ->
         expr = c.expr
         alias = c.alias
 
         if (expr instanceof SqlSelect)
             s = "(#{@select(expr)})"
-        
+
         s = expr.toSql(@)
 
-        s += " as #{@delimit(alias)}" if (alias?)
+        s += " as #{_delimit(alias)}" if (alias?)
         return s
 
     doList: (collection, separator = ', ', prelude = '') ->
@@ -83,16 +83,32 @@ class SqlFormatter
     joins: (joinList) -> @doList(joinList, ' ')
 
     from: (f) -> @column(f)
+
     join: (j) ->
         str = " INNER JOIN " + @column(j) + " ON " + j.predicate.toSql(@)
 
     select: (c) ->
         ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
-
         ret += @joins(c.joins)
         ret += @where(c)
         ret += @groupBy(c)
         ret += @orderBy(c)
+        return ret
+
+    insert: (i) ->
+        ret = "INSERT #{@f(i.targetTable)}"
+        ret += @insertData(i.insetData)
+        return ret
+
+    update: (u) ->
+        ret = "UPDATE #{@f(u.targetTable)} SET "
+        ret += @doList(u.exprs)
+        ret += @where(u)
+        return ret
+
+    delete: (d) ->
+        ret = "DELETE FROM #{@f(d.targetTable)}"
+        ret += @where(d)
         return ret
 
     where: (c) ->
@@ -102,23 +118,24 @@ class SqlFormatter
     groupBy: (c) -> @doList(c.groupings, ', ', ' GROUP BY ')
 
     orderBy: (c) -> @doList(c.orderings, ', ', ' ORDER BY ')
+
     ordering: (o) -> "#{o.expr.toSql(@)} #{o.direction}"
 
-    insert: (i) ->
-        return "INSERT #{@f(i.targetTable)}"
+    insertData: (data) ->
+        return "" if(!data?)
 
-    update: (u) ->
-        ret = "UPDATE #{@f(u.targetTable)} SET "
-        ret += @doList(u.exprs)
-        ret += @where(u)
-        return ret
+        keys = []
+        values = []
+        for k, v of data
+            keys.push(_delimit(k))
+            values.push(@f(v))
+
+        return " (#{keys.join(',')}) VALUES (#{values.join(',')})"
+
+
 
     updateExpr: (e) -> "#{@f(e.column)} = #{@f(e.value)}"
 
-    delete: (d) ->
-        ret = "DELETE FROM #{@f(d.targetTable)}"
-        ret += @where(d)
-        return ret
 
 p = SqlFormatter.prototype
 p.format = p.f

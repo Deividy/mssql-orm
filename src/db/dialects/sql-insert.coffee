@@ -5,7 +5,7 @@ class SqlInsert extends SqlStatement
     toSql: (f) ->
         return f.insert(@)
 
-    data: (d) ->
+    data: (@insetData) ->
         return @
 
 module.exports = SqlInsert
