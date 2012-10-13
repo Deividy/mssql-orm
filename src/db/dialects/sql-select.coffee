@@ -10,26 +10,6 @@ class SqlAliasedExpression extends SqlToken
         else
             @expr = a
 
-<<<<<<< HEAD
-class SqlSelect
-    constructor: (table) ->
-        @columns = []
-        @tables = []
-        @joins = []
-
-        @addTable(table)
-
-    addAlias: (o, a) ->
-        if (_.isArray(o))
-            r = o
-        else if (_.isString(o))
-            r = [ o, o ]
-        else
-            throw new Error("Format not supported for addAlias #{o.toString()}")
-
-        r[0] = new SqlIdentifierGuess(r[0]) if (_.isString(r[0]))
-        a.push(r) if (a)
-=======
 class SqlColumn extends SqlAliasedExpression
     constructor: (a, prefixHint) ->
         super(a)
@@ -64,21 +44,9 @@ class SqlSelect extends SqlStatement
         @columns = []
         @tables = []
         @joins = []
->>>>>>> gustavo
 
         (@from(t) for t in tableList)
 
-<<<<<<< HEAD
-    addTable: (t) ->
-        table = @addAlias(t, @tables)
-        @lastAlias = if (table[1]?) then table[1] else table[0]
-
-    select: (columns...) ->
-        for c in columns
-            col = @addAlias(c)
-            col[0].guessTable = @lastAlias
-            @columns.push(col)
-=======
     addFrom: (table, a) ->
         a.push(table)
         @tableHint = table.alias || @tableHint
@@ -86,7 +54,6 @@ class SqlSelect extends SqlStatement
     select: (columns...) ->
         for c in columns
             @columns.push(new SqlColumn(c, @tableHint))
->>>>>>> gustavo
 
         return @
 
@@ -107,23 +74,6 @@ class SqlSelect extends SqlStatement
         return @
 
     from: (table) ->
-<<<<<<< HEAD
-        @addTable(table)
-        return @
-
-    join: (joinedTable) ->
-        # joinedTable = { type: "LEFT", table: SqlSelect }
-        @joins.push(joinedTable)
-        return @
-
-    where: (w) ->
-        i = new SqlIdentifierGuess(w, @lastAlias)
-        if (!@whereClause?) 
-            @lastPredicate = @whereClause = new SqlPredicate(i) 
-        else 
-            @lastPredicate = @whereClause.and(i)
-        
-=======
         @addFrom(new SqlFrom(table), @tables)
         return @
 
@@ -140,27 +90,16 @@ class SqlSelect extends SqlStatement
         @groupings ?= []
 
         @groupings.push( (_.map(exprs, sql.nameOrExpr))... )
->>>>>>> gustavo
         return @
 
     having: (terms...) ->
         @havingClause = @addTerms(@havingClause, terms)
         return @
 
-<<<<<<< HEAD
-    having: (c) ->
-        i = new SqlIdentifierGuess(c, @lastAlias)
-        if (!@havingClause?) 
-            @lastPredicate = @havingClause = new SqlPredicate(i) 
-        else 
-            @lastPredicate = @havingClause.and(i)
-        return @
-=======
     addTerms: (predicate, terms) ->
         @lastPredicate = SqlPredicate.addOrCreate(predicate, terms)
         @fillTableHints()
         return @lastPredicate
->>>>>>> gustavo
 
     orderBy: (exprs...) ->
         @orderings ?= []
@@ -173,16 +112,6 @@ class SqlSelect extends SqlStatement
             @orderings.push(o)
         return @
 
-<<<<<<< HEAD
-    and: (c) ->
-        i = new SqlIdentifierGuess(c, @lastAlias)
-        @lastPredicate.and(i)
-        return @
-
-    or: (c) ->
-        i = new SqlIdentifierGuess(c, @lastAlias)
-        @lastPredicate.or(i)
-=======
     and: (terms...) ->
         return @where(terms...) unless @lastPredicate
 
@@ -195,7 +124,6 @@ class SqlSelect extends SqlStatement
 
         @lastPredicate.or(terms...)
         @fillTableHints()
->>>>>>> gustavo
         return @
 
     fillTableHints: ->

@@ -15,15 +15,7 @@ module.exports = _.extend(e, {
     SqlDelete: SqlDelete
 
     from: (t) -> new SqlSelect(t)
-<<<<<<< HEAD
-    verbatim: (s) -> new sqlTokens.SqlVerbatim(s)
-    predicate: (p) -> new sqlTokens.SqlPredicate(p)
-    name: (n) -> new sqlTokens.SqlName(n)
-    multiPartName: (parts) -> new sqlTokens.MultiPartName(parts)
-}
-=======
     insert: (t) -> new SqlInsert(t)
     update: (t) -> new SqlUpdate(t)
     delete: (t) -> new SqlDelete(t)
 })
->>>>>>> gustavo
