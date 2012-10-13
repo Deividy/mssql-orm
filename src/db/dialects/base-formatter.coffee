@@ -97,7 +97,7 @@ class SqlFormatter
 
     insert: (i) ->
         ret = "INSERT #{@f(i.targetTable)}"
-        ret += @insertData(i.insetData)
+        ret += @insertData(i.insertData)
         return ret
 
     update: (u) ->
@@ -121,18 +121,20 @@ class SqlFormatter
 
     ordering: (o) -> "#{o.expr.toSql(@)} #{o.direction}"
 
-    insertData: (data) ->
-        return "" if(!data?)
-
+    data: (d) ->
         keys = []
         values = []
-        for k, v of data
+        for k, v of d
             keys.push(_delimit(k))
             values.push(@f(v))
 
         return " (#{keys.join(',')}) VALUES (#{values.join(',')})"
 
-
+    insertData: (data) ->
+        return "" if(!data?)
+        v = []
+        (v.push(data[k].toSql(@)) for k of data)
+        return v.join('')
 
     updateExpr: (e) -> "#{@f(e.column)} = #{@f(e.value)}"
 

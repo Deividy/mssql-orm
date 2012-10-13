@@ -162,6 +162,11 @@ class SqlFilteredStatement extends SqlStatement
         @whereClause.or(terms...)
         return @
 
+class SqlData extends SqlToken
+    constructor: (@data) ->
+
+    toSql: (formatter) -> formatter.data(@data)
+
 module.exports = sql
 _.extend(sql, {
     SqlToken: SqlToken
@@ -173,6 +178,7 @@ _.extend(sql, {
     SqlOr: SqlOr
     SqlStatement: SqlStatement
     SqlFilteredStatement: SqlFilteredStatement
+    SqlData: SqlData
 })
 
 require('./sql-update')
