@@ -68,10 +68,10 @@ class TdsEngine
     doesDatabaseExist: (name, callback) ->
         @execute(
             {
-                master:true
+                master: true
                 stmt:"SELECT DB_ID('#{name}');"
                 onRow: (row) ->
-                    return callback(row.getValue(0))
+                    return callback(row.getValue(0)?)
             }
         )
 

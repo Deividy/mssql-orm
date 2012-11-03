@@ -26,9 +26,16 @@ describe('DatabaseEngine: On the test', () ->
             )
         )
 
-        it('should check if the app database exists', (done) ->
+        it('says the app database exists', (done) ->
             engine.adapter.doesDatabaseExist(config.database, (db) ->
-                db.should.be.ok
+                db.should.be.true
+                done()
+            )
+        )
+
+        it('says an inexistent db does not exist', (done) ->
+            engine.adapter.doesDatabaseExist('Random3490', (db) ->
+                db.should.be.false
                 done()
             )
         )
