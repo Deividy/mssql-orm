@@ -1,4 +1,4 @@
-{ SqlDelete } = sql = require('../src/db/dialects/sql-grammar')
+{ SqlDelete } = sql = require('../src/db/dialects/sql')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
 h = require('./test-helper')

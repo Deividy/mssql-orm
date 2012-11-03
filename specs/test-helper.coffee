@@ -1,6 +1,6 @@
 sys = require('sys')
 
-sql = require('../src/db/dialects/sql-grammar')
+sql = require('../src/db/dialects/sql')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
 f = new SqlFormatter()

@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./sql-tokens')
+{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./sql')
 
 class SqlAliasedExpression extends SqlToken
     constructor: (a) ->
@@ -140,5 +140,12 @@ class SqlSelect extends SqlStatement
 
 p = SqlSelect.prototype
 p.limit = p.top = p.take
+
+_.extend(sql, {
+    select: (t) -> new SqlSelect(t)
+    from: (t) -> new SqlSelect(t)
+
+    SqlSelect: SqlSelect
+})
 
 module.exports = SqlSelect

@@ -175,4 +175,7 @@ _.extend(sql, {
     SqlFilteredStatement: SqlFilteredStatement
 })
 
+require('./sql-select')
+require('./sql-insert')
+require('./sql-delete')
 require('./sql-update')

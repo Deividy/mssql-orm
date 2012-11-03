@@ -1,5 +1,5 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken, SqlSelect, SqlExpression } = require('./sql-grammar')
+{ SqlPredicate, SqlToken, SqlSelect, SqlExpression } = require('./sql')
 
 SqlIdentifier = SqlToken.SqlIdentifier
 

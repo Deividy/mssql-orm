@@ -1,4 +1,4 @@
-{ SqlPredicate } = sql = require('../src/db/dialects/sql-grammar')
+{ SqlPredicate } = sql = require('../src/db/dialects/sql')
 SqlFormatter = require('../src/db/dialects/base-formatter')
 
 sys = require('sys')
