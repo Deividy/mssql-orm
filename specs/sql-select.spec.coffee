@@ -61,4 +61,11 @@ describe('SqlSelect', () ->
 
         h.assert(s, exp, false)
     )
+
+    it('can be instantiated via sql.select', () ->
+        s = sql.select('FirstName', 'LastName').from('Customers')
+        exp = "SELECT [FirstName] as [FirstName], [LastName] as [LastName] FROM [Customers] as [Customers]"
+
+        h.assert(s, exp, false)
+    )
 )

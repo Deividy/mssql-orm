@@ -142,7 +142,10 @@ p = SqlSelect.prototype
 p.limit = p.top = p.take
 
 _.extend(sql, {
-    select: (t) -> new SqlSelect(t)
+    select: (t...) ->
+        s = new SqlSelect()
+        s.select(t...)
+    
     from: (t) -> new SqlSelect(t)
 
     SqlSelect: SqlSelect
