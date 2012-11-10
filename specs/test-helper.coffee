@@ -34,7 +34,6 @@ module.exports = {
     inspect: (o) ->
         console.log(util.inspect(o, true, 5, true))
 
-
     getDb: (engine = defaultEngine) ->
         return db ?= new Database(testConfig.databases[engine])
 }

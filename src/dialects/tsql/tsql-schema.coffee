@@ -1,4 +1,6 @@
-class TsqlSchema
+DbSchema = require('../../db-schema')
+
+class TsqlSchema extends DbSchema
     constructor: (@db) ->
 
     getAllTablesName: (tables, callback) ->
@@ -138,4 +140,4 @@ class TsqlSchema
     getDbTree: (callback) ->
         @buildDbTree(callback)
 
-module.exports = DbSchema
+module.exports = TsqlSchema
