@@ -1,7 +1,6 @@
 Database = require("./database")
 
 class DbSchema
-
     constructor: (config) ->
         @db = new Database(config)
 

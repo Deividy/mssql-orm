@@ -9,6 +9,7 @@ class TdsEngine
             callback = options
             options = {}
         config = _.clone(@config)
+        config.port ?= 1433
         if options?.master
             config.database = 'master'
         self = @

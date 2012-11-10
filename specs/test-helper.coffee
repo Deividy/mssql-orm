@@ -1,7 +1,7 @@
-sys = require('sys')
+util = require('util')
 
-sql = require('../src/db/dialects/sql')
-SqlFormatter = require('../src/db/dialects/base-formatter')
+sql = require('../src/sql')
+SqlFormatter = require('../src/base-formatter')
 
 f = new SqlFormatter()
 debug = false
@@ -20,5 +20,5 @@ module.exports = {
         ret.should.eql(expected)
 
     inspect: (o) ->
-        console.log(sys.inspect(o, true, 5))
+        console.log(util.inspect(o, true, 5, true))
 }

@@ -1,5 +1,6 @@
 fs = require('fs')
 Database = require('../src/database')
+h = require('./test-helper')
 
 env = "development"
 config = null
@@ -23,7 +24,7 @@ describe('Database: On the test', () ->
 
         it('should execute a simple query', (done) ->
             stmt = "SELECT 1"
-            database.query(stmt, (dn) ->
+            database.query(stmt, (data) ->
                 done()
             )
         )

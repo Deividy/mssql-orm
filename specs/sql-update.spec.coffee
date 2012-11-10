@@ -1,5 +1,5 @@
-{ SqlUpdate } = sql = require('../src/db/dialects/sql')
-SqlFormatter = require('../src/db/dialects/base-formatter')
+{ SqlUpdate } = sql = require('../src/sql')
+SqlFormatter = require('../src/base-formatter')
 
 h = require('./test-helper')
 

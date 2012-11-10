@@ -1,4 +1,4 @@
-{ SqlToken, SqlExpression, SqlName, SqlMultiPartName } = sql = require('../src/db/dialects/sql')
+{ SqlToken, SqlExpression, SqlName, SqlMultiPartName } = sql = require('../src/sql')
 
 describe('SqlToken', () ->
     it('Can tell expressions from names', ->
