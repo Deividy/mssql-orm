@@ -1,12 +1,24 @@
 util = require('util')
-
 sql = require('../src/sql')
-SqlFormatter = require('../src/sql-formatter')
+path = require('path')
+
+testConfig = require('./config.json')
+sourceFolder = path.resolve(__dirname, '../src')
+requireSrc = (pathToFile) -> require(path.resolve(sourceFolder, pathToFile))
+
+SqlFormatter = requireSrc('sql-formatter')
+Database = requireSrc('database')
 
 f = new SqlFormatter()
 debug = false
+db = null
+defaultEngine = 'mssql'
 
 module.exports = {
+    testConfig: testConfig
+    requireSrc: requireSrc
+    defaultDbConfig: testConfig.databases[defaultEngine]
+
     assert: (sql, expected, debug) ->
         ret = sql.toSql(f)
         if debug
@@ -21,4 +33,8 @@ module.exports = {
 
     inspect: (o) ->
         console.log(util.inspect(o, true, 5, true))
+
+
+    getDb: (engine = defaultEngine) ->
+        return db ?= new Database(testConfig.databases[engine])
 }

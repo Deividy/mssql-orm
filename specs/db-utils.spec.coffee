@@ -1,17 +1,13 @@
 fs = require('fs')
 tds = require('tds')
-DatabaseUtils = require('../src/db-utils')
+h = require('./test-helper')
+DatabaseUtils = h.requireSrc('db-utils')
 
 env = "development"
-config = null
+config = h.defaultDbConfig
 db_utils = null
 
 describe('DatabaseUtils: On the test', () ->
-    before(() ->
-        data = JSON.parse(fs.readFileSync("./config.json", "utf-8"))
-        config = data[env].database.mssql
-    )
-
     describe('for the date utils', () ->
         it('should have a configuration object', () ->
             config.should.be.a('object')

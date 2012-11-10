@@ -1,8 +1,5 @@
-Database = require("./database")
-
-class DbSchema
-    constructor: (config) ->
-        @db = new Database(config)
+class TsqlSchema
+    constructor: (@db) ->
 
     getAllTablesName: (tables, callback) ->
         @db.getRows("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES", (data) ->

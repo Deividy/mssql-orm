@@ -1,18 +1,14 @@
 fs = require('fs')
 tds = require('tds')
-DatabaseEngine = require('../src/db-engine')
+h = require('./test-helper')
+DatabaseEngine = h.requireSrc('db-engine')
 
 env = "development"
-config = null
+config = h.defaultDbConfig
 engine = null
 db_name = null
 
 describe('DatabaseEngine: On the test', () ->
-    before(() ->
-        data = JSON.parse(fs.readFileSync("./config.json", "utf-8"))
-        config = data[env].database.mssql
-    )
-
     describe('for the database', () ->
         it('should have a configuration object', () ->
             config.should.be.a('object')
