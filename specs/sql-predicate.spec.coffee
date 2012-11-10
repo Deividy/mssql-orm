@@ -1,5 +1,5 @@
 { SqlPredicate } = sql = require('../src/sql')
-SqlFormatter = require('../src/base-formatter')
+SqlFormatter = require('../src/sql-formatter')
 
 sys = require('sys')
 

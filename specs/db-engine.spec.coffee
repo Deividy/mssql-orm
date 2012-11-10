@@ -1,6 +1,6 @@
 fs = require('fs')
 tds = require('tds')
-DatabaseEngine = require('../src/engine')
+DatabaseEngine = require('../src/db-engine')
 
 env = "development"
 config = null
