@@ -1,13 +1,23 @@
-DatabaseEngine = require('./db-engine')
+engines = require('./engines.json')
 
 class Database
     constructor: (@config) ->
-        @engine = new DatabaseEngine(@config)
-        @adapter = @engine.adapter
+        @adapter = @_getAdapter()
 
-        # MUST: fix this
-        dialect = require('./dialects/tsql')
-        { @schema, @utils, @formatter } = new dialect(@)
+        dialect = @_getDialect()
+        { @schema, @utils, @formatter } = dialect
+
+    _getAdapter: () ->
+        name = @config.adapter ? engines[@config.engine].adapter
+        path = "./adapters/#{name}"
+        adapter = require(path)
+        return new adapter(@config)
+
+    _getDialect: () ->
+        name = @config.dialect ? engines[@config.engine].dialect
+        path = "./dialects/#{name}"
+        dialect = require(path)
+        return new dialect(@)
 
     query: (stmt, callback) ->
         @adapter.execute({
