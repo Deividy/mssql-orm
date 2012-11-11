@@ -1,0 +1,54 @@
+tds = require('tds')
+h = require('../test-helper')
+
+config = h.testConfig.databases.mssql
+adapter = null
+
+describe('TDS Adapter', () ->
+    it('Should instantiate succesfully', () ->
+        tds = h.requireSrc('adapters/tds')
+        adapter = new tds(config)
+    )
+
+    it('should connect to the master database', (done) ->
+        adapter.connect({master:true}, (conn) ->
+            conn.should.be.ok
+            done()
+        )
+    )
+
+    it('says the app database exists', (done) ->
+        adapter.doesDatabaseExist(config.database, (db) ->
+            db.should.be.true
+            done()
+        )
+    )
+
+    it('says an inexistent db does not exist', (done) ->
+        adapter.doesDatabaseExist('Random3490', (db) ->
+            db.should.be.false
+            done()
+        )
+    )
+
+    db_name = "test_db_#{Date.now()}"
+    it('should create a database', (done) ->
+        adapter.createDatabase(db_name, (dn) ->
+            done()
+        )
+    )
+
+    it('should check if the created database exists', (done) ->
+        adapter.doesDatabaseExist(db_name, (db) ->
+            db.should.be.ok
+            done()
+        )
+    )
+
+    it('should drop the created database', (done) ->
+        adapter.dropDatabase(db_name, (dn) ->
+            dn.should.be.ok
+            done()
+        )
+    )
+    )
