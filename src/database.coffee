@@ -5,12 +5,23 @@ class Database
         @engine = new DatabaseEngine(@config)
         @adapter = @engine.adapter
 
+        # MUST: fix this
+        dialect = require('./dialects/tsql')
+        { @schema, @utils, @formatter } = new dialect(@)
+
     query: (stmt, callback) ->
         @adapter.execute({
             stmt: stmt
             onDone: (done) ->
                 return callback(done)
         })
+
+    scalar: (query, callback) ->
+        @adapter.execute(
+            stmt: query
+            onRow: (row) ->
+                callback(row.getValue(0))
+        )
 
     getRows: (stmt, callback) ->
         self = @

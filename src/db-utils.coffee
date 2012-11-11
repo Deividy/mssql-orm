@@ -1,37 +1,8 @@
-DatabaseEngine = require('./db-engine')
-
 class DatabaseUtils
-    constructor: (@config) ->
-        @engine = new DatabaseEngine(@config)
+    constructor: (@db) ->
 
-    dbNow: (callback) ->
-    	@engine.adapter.execute(
-            {
-                master:true
-                stmt:"SELECT GETDATE();"
-                onRow: (row) ->
-                    callback(row.getValue(0))
-            }
-        )
-
-    dbUtcNow: (callback) ->
-    	@engine.adapter.execute(
-            {
-                master:true
-                stmt:"SELECT GETUTCDATE();"
-                onRow: (row) ->
-                    callback(row.getValue(0))
-            }
-        )
-
-    dbUtcOffset: (callback) ->
-    	@engine.adapter.execute(
-            {
-                master:true
-                stmt:"SELECT DATEDIFF(mi, GETUTCDATE(), GETDATE());"
-                onRow: (row) ->
-                    callback(row.getValue(0))
-            }
-        )
+    dbNow: (callback) -> @db.scalar(@stmts.dbNow, callback)
+    dbUtcNow: (callback) -> @db.scalar(@stmts.dbUtcNow, callback)
+    dbUtcOffset: (callback) -> @db.scalar(@stmts.dbUtcOffset, callback)
 
 module.exports = DatabaseUtils
