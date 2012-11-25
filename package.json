@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "private": false,
     "dependencies": {
-        "tds": "0.1",
+        "tds": "git://github.com/cretz/node-tds.git",
         "underscore": "1.3.3",
         "mocha": "",
         "coffee-script": "",
