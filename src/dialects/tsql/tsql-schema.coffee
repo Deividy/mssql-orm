@@ -1,16 +1,17 @@
 DbSchema = require('../../db-schema')
+_ = require('underscore')
+sql = require('../../sql')
 
 class TsqlSchema extends DbSchema
     constructor: (@db) ->
 
-    getAllTablesName: (tables, callback) ->
-        @db.getRows("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES", (data) ->
-            data.forEach((item)->
-                tblName = item.getValue('TABLE_NAME')
-                tables[tblName] = {}
-            )
-            callback(tables)
-        )
+    getTableNames: (callback) ->
+        tables = []
+        query =
+            "SELECT TABLE_NAME name FROM INFORMATION_SCHEMA.TABLES " +
+            "WHERE TABLE_TYPE = 'BASE TABLE'"
+
+        @db.array(query, (a) -> callback(a.sort()))
 
     getConstraints: (tables, callback) ->
         self = @

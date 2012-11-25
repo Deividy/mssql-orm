@@ -1,3 +1,4 @@
+_ = require('underscore')
 engines = require('./engines.json')
 
 class Database
@@ -19,7 +20,7 @@ class Database
         dialect = require(path)
         return new dialect(@)
 
-    query: (stmt, callback) ->
+    run: (stmt, callback) ->
         @adapter.execute({
             stmt: stmt
             onDone: (done) ->
@@ -29,20 +30,23 @@ class Database
     scalar: (query, callback) ->
         @adapter.execute(
             stmt: query
-            onRow: (row) ->
-                callback(row.getValue(0))
+            onRow: (row) -> callback(row[0])
         )
 
-    getRows: (stmt, callback) ->
-        self = @
+    array: (query, callback) ->
+        a = []
+        @adapter.execute(
+           stmt: query,
+           onRow: (row) -> a.push(row[0])
+           onDone: () -> callback(a)
+        )
+
+    allRows: (query, callback) ->
         data = []
         @adapter.execute({
-            stmt: stmt
-            onRow: (row) ->
-                data.push(self._getColumns(row))
-                return
-            onDone: (done) ->
-                return callback(data)
+            stmt: query
+            onRow: (row) -> data.push(row)
+            onDone: (done) -> return callback(data)
         })
 
     _toJSON: (data) ->

@@ -27,7 +27,7 @@ class DbTable
                 callback.success = @defaultHandler.success
             if (!callback.error)
                 callback.error = @defaultHandler.error
-        return @database.query(stmt, callback.success) if @database
+        return @database.run(stmt, callback.success) if @database
         return callback.success(stmt)
 
     @updateOne: (data, where, callback) ->

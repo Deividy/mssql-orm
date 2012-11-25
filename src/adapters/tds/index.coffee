@@ -29,8 +29,34 @@ class TdsEngine
         sql = _.isString(options) && options || options?.stmt
         @connect(options, (conn) ->
             stmt = conn.createStatement(sql)
-            stmt.on('row', options?.onRow || self._onRowDefault())
-            stmt.on('done', options?.onDone || self._onDoneDefault())
+
+            doRow = options.onRow?
+            doAllRows = options.onAllRows?
+            rows = [] if doAllRows
+
+            if (doRow || doAllRows)
+                stmt.on('row', (row) ->
+                    out = {}
+                    for col in row.metadata.columns
+                        out[col.name] = out[col.index] = row.getValue(col.index)
+
+                    if doRow
+                        options.onRow(out, options)
+
+                    if doAllRows
+                        allRows.push(out)
+
+                    return
+                )
+
+            stmt.on('done', () ->
+                if doAllRows
+                    options.onAllRows(rows, options)
+
+                if options.onDone?
+                    options.onDone(options)
+            )
+                
             stmt.on('error', options?.onError || self._onErrorDefault())
             stmt.execute()
             return
@@ -71,8 +97,7 @@ class TdsEngine
             {
                 master: true
                 stmt:"SELECT DB_ID('#{name}');"
-                onRow: (row) ->
-                    return callback(row.getValue(0)?)
+                onRow: (row) -> callback(row[0]?)
             }
         )
 
@@ -81,8 +106,7 @@ class TdsEngine
             {
                 master:true
                 stmt:"IF (DB_ID('#{name}') IS NULL) CREATE DATABASE #{name};"
-                onDone: (done) ->
-                    callback(done)
+                onDone: (done) -> callback(done)
             }
         )
 
@@ -106,10 +130,8 @@ class TdsEngine
                 master:true
                 stmt:"SELECT SPId FROM MASTER..SysProcesses WHERE DBId =
                 DB_ID('#{name}') AND cmd <> 'CHECKPOINT';"
-                onRow: (row) ->
-                    return self._killProcess(row.getValue(0), callback) if row
-                onDone: (done) ->
-                    return callback(done)
+                onRow: (row) -> self._killProcess(row[0], callback) if row
+                onDone: (done) -> callback(done)
             }
         )
 
@@ -118,8 +140,7 @@ class TdsEngine
             {
                 master:true
                 stmt:"KILL #{id}"
-                onDone: (done) ->
-                    return callback(done)
+                onDone: (done) -> callback(done)
             }
         )
 
