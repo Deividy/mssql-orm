@@ -65,17 +65,4 @@ class TsqlSchema extends DbSchema
             keyColumns: (cb) => @getKeyColumns(cb)
         }, callback)
 
-    buildDbTree: (callback) ->
-        self = @
-        dbTree = {}
-        @getConstraints(dbTree, (tables) ->
-            self.getColumns(tables, (tables) ->
-                dbTree = { tables: tables }
-                callback(dbTree)
-            )
-        )
-
-    getDbTree: (callback) ->
-        @buildDbTree(callback)
-
 module.exports = TsqlSchema

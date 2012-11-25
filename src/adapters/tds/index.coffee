@@ -92,6 +92,7 @@ class TdsAdapter
     doesDatabaseExist: (name, callback) ->
         @execute(
             {
+                rowShape: 'array'
                 master: true
                 stmt:"SELECT DB_ID('#{name}');"
                 onRow: (row) -> callback(row[0]?)
@@ -124,9 +125,13 @@ class TdsAdapter
         self = @
         @execute(
             {
-                master:true
-                stmt:"SELECT SPId FROM MASTER..SysProcesses WHERE DBId =
-                DB_ID('#{name}') AND cmd <> 'CHECKPOINT';"
+                master: true
+                rowShape: 'array'
+
+                stmt: "
+                    SELECT SPId FROM MASTER..SysProcesses WHERE DBId =
+                    DB_ID('#{name}') AND cmd <> 'CHECKPOINT'
+                "
                 onRow: (row) -> self._killProcess(row[0], callback) if row
                 onDone: (done) -> callback(done)
             }
