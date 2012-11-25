@@ -9,6 +9,7 @@
         "mocha": "",
         "coffee-script": "",
         "should": "",
-        "async": ""
+        "async": "",
+        "generic-pool": ""
     }
 }
