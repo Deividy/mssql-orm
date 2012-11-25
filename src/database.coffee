@@ -28,7 +28,7 @@ class Database
             rowShape: 'array'
             onAllRows: (rows) ->
                 if (rows.length != 1)
-                    e = "Expect query #{query} to return 1 row, " +
+                    e = "Expected query #{query} to return 1 row, " +
                         "but it returned #{rows.length} rows."
                     callback(e)
 
