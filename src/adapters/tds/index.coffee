@@ -19,20 +19,20 @@ class TdsAdapter
             if (err)
                 callback(err)
             else
-                conn.on('error', options.onError ? _.bind(@onConnectionError, @))
-                conn.on('message', options.onMessage ? _.bind(@onConnectionMessage, @))
+                conn.on('error', options.onError ? @onConnectionError)
+                conn.on('message', options.onMessage ? @onConnectionMessage)
                 callback(null, conn)
         )
 
     execute: (options) ->
-        fnErr = options.onError ? _.bind(@onExecuteError, @)
+        fnErr = options.onError ? @onExecuteError
 
         @pool.acquire((err, conn) =>
             if(err)
                 fnErr(err)
                 return
 
-            stmt = conn.createStatement(options.stmt)
+            stmt = conn.createStatement(options.stmt ? options.q ? options.query)
 
             doRow = options.onRow?
             doAllRows = options.onAllRows?
@@ -40,9 +40,19 @@ class TdsAdapter
 
             if (doRow || doAllRows)
                 stmt.on('row', (row) ->
-                    out = {}
-                    for col in row.metadata.columns
-                        out[col.name] = out[col.index] = row.getValue(col.index)
+                    columns = row.metadata.columns
+                    rowShape = options.rowShape ? 'object'
+
+                    if (rowShape == 'array')
+                        out = (row.getValue(col.index) for col in columns)
+                    else
+                        out = {}
+                        for col in columns
+                            v = row.getValue(col.index)
+                            out[col.name ? col.index] = v
+
+                            if (rowShape == 'mixed')
+                                out[col.index] = v
 
                     if doRow
                         options.onRow(out, options)

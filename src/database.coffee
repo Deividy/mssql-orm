@@ -25,6 +25,7 @@ class Database
 
     scalar: (query, callback) ->
         opt = {
+            rowShape: 'array'
             onAllRows: (rows) ->
                 if (rows.length != 1)
                     e = "Expect query #{query} to return 1 row, " +
@@ -36,15 +37,20 @@ class Database
         @execute(query, opt, callback)
 
     execute: (query, opt, callback) ->
+        if _.isString(query)
+            opt.stmt = query
+        else
+            _.defaults(opt, query)
+
         opt.onError = (e) -> callback(e)
-        opt.stmt = query
         @adapter.execute(opt)
 
     array: (query, callback) ->
         a = []
         opt = {
-           onRow: (row) -> a.push(row[0])
-           onDone: () -> callback(null, a)
+            rowShape: 'array'
+            onRow: (row) -> a.push(row[0])
+            onDone: () -> callback(null, a)
         }
         @execute(query, opt, callback)
 

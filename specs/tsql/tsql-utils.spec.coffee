@@ -26,4 +26,4 @@ describe('TsqlUtils', () ->
             done()
         )
     )
-    )
+)
