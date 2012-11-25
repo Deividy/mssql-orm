@@ -1,33 +1,32 @@
 tds = require('tds')
 _ = require('underscore')
 
-class TdsEngine
-    constructor: (@config) ->
+class TdsAdapter
+    constructor: (config) ->
+        @config = _.clone(config)
+        @config.database ?= 'master'
 
     connect: (options, callback) ->
-        if arguments.length == 1
-            callback = options
-            options = {}
-        config = _.clone(@config)
-        config.port ?= 1433
-        if options?.master
-            config.database = 'master'
-        self = @
-        @conn = new tds.Connection(config)
-        @conn.connect((err) ->
+        @conn = new tds.Connection(@config)
+        @conn.connect((err) =>
             if (err)
-                console.error('Received error: ', err)
-                return
+                callback(err)
             else
-                self.conn.on('error', options?.onConnectionError || self._onConnectionErrorDefault())
-                self.conn.on('message', options?.onConnectionMessage || self._onConnectionMessageDefault())
-                return callback(self.conn)
+                @conn.on('error', options.onError ? _.bind(@onConnectionError, @))
+                @conn.on('message', options.onMessage ? _.bind(@onConnectionMessage, @))
+                return callback(null, @conn)
         )
 
     execute: (options) ->
         self = @
         sql = _.isString(options) && options || options?.stmt
-        @connect(options, (conn) ->
+        fnErr = options.onError ? _.bind(@onExecuteError, @)
+
+        @connect(options, (err, conn) ->
+            if(err)
+                fnErr(err)
+                return
+
             stmt = conn.createStatement(sql)
 
             doRow = options.onRow?
@@ -49,48 +48,27 @@ class TdsEngine
                     return
                 )
 
-            stmt.on('done', () ->
+            stmt.on('done', (affected) ->
                 if doAllRows
                     options.onAllRows(rows, options)
 
                 if options.onDone?
-                    options.onDone(options)
+                    options.onDone(affected)
             )
                 
-            stmt.on('error', options.onError ? self._onErrorDefault())
+            stmt.on('error', fnErr)
             stmt.execute()
             return
         )
 
-    # Default connection error handler
-    _onConnectionErrorDefault: () ->
-        return (err) ->
-            throw new Error(err)
 
-    # Defalt connection message handler
-    _onConnectionMessageDefault: () ->
-        return (message) ->
-            console.info('Received info', message)
+    onConnectionMessage: (msg) ->
 
-    # Default error handler
-    _onErrorDefault: () ->
-        return (err) ->
-            throw new Error(err)
+    onConnectionError: (err) ->
+        throw new Error(err)
 
-    # Defalt message handler
-    _onMessageDefault: () ->
-        return (message) ->
-            console.info('Received info', message)
-
-    # Defalt row handler
-    _onRowDefault: () ->
-        return (row) ->
-            # console.info('Row info', row)
-
-    # Defalt done handler
-    _onDoneDefault: () ->
-        return (done) ->
-            # console.info('Done info', done)
+    onExecuteError: (err) ->
+        throw new Error(err)
 
     doesDatabaseExist: (name, callback) ->
         @execute(
@@ -144,4 +122,4 @@ class TdsEngine
             }
         )
 
-module.exports = TdsEngine
+module.exports = TdsAdapter
