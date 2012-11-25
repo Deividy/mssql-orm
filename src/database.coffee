@@ -21,33 +21,36 @@ class Database
         return new dialect(@)
 
     run: (stmt, callback) ->
-        @adapter.execute({
-            stmt: stmt
-            onDone: (done) ->
-                return callback(done)
-        })
+        @execute(stmt, { onDone: () -> callback(null) }, callback)
 
     scalar: (query, callback) ->
-        @adapter.execute(
-            stmt: query
-            onRow: (row) -> callback(row[0])
-        )
+        opt = {
+            onAllRows: (rows) ->
+                if (rows.length != 1)
+                    e = "Expect query #{query} to return 1 row, " +
+                        "but it returned #{rows.length} rows."
+                    callback(e)
+
+                callback(null, rows[0][0])
+        }
+        @execute(query, opt, callback)
+
+    execute: (query, opt, callback) ->
+        opt.onError = (e) -> callback(e)
+        opt.stmt = query
+        @adapter.execute(opt)
 
     array: (query, callback) ->
         a = []
-        @adapter.execute(
-           stmt: query,
+        opt = {
            onRow: (row) -> a.push(row[0])
-           onDone: () -> callback(a)
-        )
+           onDone: () -> callback(null, a)
+        }
+        @execute(query, opt, callback)
 
     allRows: (query, callback) ->
-        data = []
-        @adapter.execute({
-            stmt: query
-            onRow: (row) -> data.push(row)
-            onDone: (done) -> return callback(data)
-        })
+        opt = { onAllRows: (rows) -> callback(null, rows) }
+        @execute(query, opt, callback)
 
     _toJSON: (data) ->
         out = []

@@ -44,7 +44,7 @@ class TdsEngine
                         options.onRow(out, options)
 
                     if doAllRows
-                        allRows.push(out)
+                        rows.push(out)
 
                     return
                 )
@@ -57,7 +57,7 @@ class TdsEngine
                     options.onDone(options)
             )
                 
-            stmt.on('error', options?.onError || self._onErrorDefault())
+            stmt.on('error', options.onError ? self._onErrorDefault())
             stmt.execute()
             return
         )

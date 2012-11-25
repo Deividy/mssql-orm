@@ -12,7 +12,7 @@ describe('TsqlSchema', () ->
     )
 
     it('reads table names', (done) ->
-        schema.getTableNames((tables) ->
+        schema.getTableNames((err, tables) ->
             tables.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
             done()
         )

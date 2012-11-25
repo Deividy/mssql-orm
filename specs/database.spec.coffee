@@ -24,7 +24,7 @@ describe('Database', () ->
 
     it('should get query rows', (done) ->
         stmt = "SELECT 1 AS test"
-        database.allRows(stmt, (data) ->
+        database.allRows(stmt, (err, data) ->
             data.should.eql([{test:1, '0': 1}])
             done()
         )

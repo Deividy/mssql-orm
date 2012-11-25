@@ -11,7 +11,9 @@ class TsqlSchema extends DbSchema
             "SELECT TABLE_NAME name FROM INFORMATION_SCHEMA.TABLES " +
             "WHERE TABLE_TYPE = 'BASE TABLE'"
 
-        @db.array(query, (a) -> callback(a.sort()))
+        @db.array(query, (err, a) ->
+            if err then callback(err, null) else callback(null, a.sort())
+        )
 
     getConstraints: (tables, callback) ->
         self = @
