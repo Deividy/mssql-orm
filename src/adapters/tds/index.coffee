@@ -7,6 +7,7 @@ class TdsAdapter
         @config = _.clone(config)
         @config.database ?= 'master'
 
+        # MUST: implement destroy, need to see what TDS offers
         @pool = poolModule.Pool({
             name: 'tds'
             create: (cb) => @_createConnection(@config, cb)
@@ -53,6 +54,9 @@ class TdsAdapter
                 )
 
             stmt.on('done', (affected) =>
+                # MUST: ensure done is called even if there's an error, otherwise
+                # we'll leak the connection
+
                 if doAllRows
                     options.onAllRows(rows, options)
 
