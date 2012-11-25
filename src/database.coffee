@@ -6,7 +6,7 @@ class Database
         @adapter = @_getAdapter()
 
         dialect = @_getDialect()
-        { @schema, @utils, @formatter } = dialect
+        { @utils, @formatter } = dialect
 
     _getAdapter: () ->
         name = @config.adapter ? engines[@config.engine].adapter
