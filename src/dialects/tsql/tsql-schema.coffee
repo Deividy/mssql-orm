@@ -1,6 +1,6 @@
 DbSchema = require('../../db-schema')
 _ = require('underscore')
-sql = require('../../sql')
+async = require('async')
 
 class TsqlSchema extends DbSchema
     constructor: (@db) ->
@@ -56,6 +56,14 @@ class TsqlSchema extends DbSchema
         "
 
         @db.allRows(query, callback)
+
+    getAllMetadata: (callback) ->
+        async.parallel({
+            tables: (cb) => @getTableNames(cb)
+            columns: (cb) => @getColumns(cb)
+            foreignKeys: (cb) => @getForeignKeys(cb)
+            keyColumns: (cb) => @getKeyColumns(cb)
+        }, callback)
 
     buildDbTree: (callback) ->
         self = @

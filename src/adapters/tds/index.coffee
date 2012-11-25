@@ -1,33 +1,37 @@
 tds = require('tds')
 _ = require('underscore')
+poolModule = require('generic-pool')
 
 class TdsAdapter
     constructor: (config) ->
         @config = _.clone(config)
         @config.database ?= 'master'
 
-    connect: (options, callback) ->
-        @conn = new tds.Connection(@config)
-        @conn.connect((err) =>
+        @pool = poolModule.Pool({
+            name: 'tds'
+            create: (cb) => @_createConnection(@config, cb)
+        })
+
+    _createConnection: (options, callback) ->
+        conn = new tds.Connection(@config)
+        conn.connect((err) =>
             if (err)
                 callback(err)
             else
-                @conn.on('error', options.onError ? _.bind(@onConnectionError, @))
-                @conn.on('message', options.onMessage ? _.bind(@onConnectionMessage, @))
-                return callback(null, @conn)
+                conn.on('error', options.onError ? _.bind(@onConnectionError, @))
+                conn.on('message', options.onMessage ? _.bind(@onConnectionMessage, @))
+                callback(null, conn)
         )
 
     execute: (options) ->
-        self = @
-        sql = _.isString(options) && options || options?.stmt
         fnErr = options.onError ? _.bind(@onExecuteError, @)
 
-        @connect(options, (err, conn) ->
+        @pool.acquire((err, conn) =>
             if(err)
                 fnErr(err)
                 return
 
-            stmt = conn.createStatement(sql)
+            stmt = conn.createStatement(options.stmt)
 
             doRow = options.onRow?
             doAllRows = options.onAllRows?
@@ -48,17 +52,18 @@ class TdsAdapter
                     return
                 )
 
-            stmt.on('done', (affected) ->
+            stmt.on('done', (affected) =>
                 if doAllRows
                     options.onAllRows(rows, options)
 
                 if options.onDone?
                     options.onDone(affected)
+
+                @pool.release(conn)
             )
                 
             stmt.on('error', fnErr)
             stmt.execute()
-            return
         )
 
 

@@ -58,4 +58,14 @@ describe('TsqlSchema', () ->
             done()
         )
     )
+
+    it('reads all metadata', (done) ->
+        schema.getAllMetadata((err, m) ->
+            checkTables(m.tables)
+            checkColumns(m.columns)
+            checkForeignKeys(m.foreignKeys)
+            checkKeyColumns(m.keyColumns)
+            done()
+        )
+    )
 )

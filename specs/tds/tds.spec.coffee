@@ -11,13 +11,6 @@ describe('TDS Adapter', () ->
         adapter = new tds(config)
     )
 
-    it('should connect to the master database', (done) ->
-        adapter.connect({master:true}, (conn) ->
-            conn.should.be.ok
-            done()
-        )
-    )
-
     it('says the app database exists', (done) ->
         adapter.doesDatabaseExist(config.database, (db) ->
             db.should.be.true
