@@ -7,12 +7,22 @@ sourceFolder = path.resolve(__dirname, '../src')
 requireSrc = (pathToFile) -> require(path.resolve(sourceFolder, pathToFile))
 
 SqlFormatter = requireSrc('sql-formatter')
-Database = requireSrc('database')
+ezekiel = requireSrc('ezekiel')
 
 f = new SqlFormatter()
 debug = false
 db = null
 defaultEngine = 'mssql'
+
+before((done) ->
+    ezekiel.connect(testConfig.databases['mssql'], (err, database) ->
+        if (err)
+            throw new Error(err)
+
+        db = database
+        done()
+    )
+)
 
 module.exports = {
     testConfig: testConfig
@@ -34,6 +44,5 @@ module.exports = {
     inspect: (o) ->
         console.log(util.inspect(o, true, 5, true))
 
-    getDb: (engine = defaultEngine) ->
-        return db ?= new Database(testConfig.databases[engine])
+    getDb: (engine = defaultEngine) -> db
 }

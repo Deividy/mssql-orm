@@ -1,6 +1,5 @@
 fs = require('fs')
 h = require('./test-helper')
-Database = h.requireSrc('database')
 
 env = "development"
 database = null
@@ -12,7 +11,7 @@ describe('Database', () ->
 
     it('should instantiate the Database class correctly', () ->
         database = h.getDb()
-        database.should.be.an.instanceOf(Database)
+        database.should.be.a('object')
     )
 
     it('should execute a simple query', (done) ->

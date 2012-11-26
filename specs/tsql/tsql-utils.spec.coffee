@@ -1,12 +1,8 @@
 should = require('should')
-
 h = require('../test-helper')
-Database = h.requireSrc('database')
 
-db = h.getDb('mssql')
-db_utils = db.utils
 
-schema = null
+utils = null
 
 checkTables = (tables) -> tables.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
 
@@ -27,9 +23,15 @@ checkKeyColumns = (keyColumns) ->
         should.exist(c.columnName)
         should.exist(c.position)
 
+
+
 describe('TsqlUtils', () ->
+    before(() ->
+        utils = h.getDb('mssql').utils
+    )
+
     it('should create a date now', (done) ->
-        db_utils.dbNow((err, date) ->
+        utils.dbNow((err, date) ->
             x = new Date(date)
             date.toTimeString().should.eql(x.toTimeString())
             done()
@@ -37,7 +39,7 @@ describe('TsqlUtils', () ->
     )
 
     it('should create a date now on utc', (done) ->
-        db_utils.dbUtcNow((err, date) ->
+        utils.dbUtcNow((err, date) ->
             x = new Date(date)
             date.toTimeString().should.eql(x.toTimeString())
             done()
@@ -45,7 +47,7 @@ describe('TsqlUtils', () ->
     )
 
     it('should check the offset to utc', (done) ->
-        db_utils.dbUtcOffset((err, offset) ->
+        utils.dbUtcOffset((err, offset) ->
             offset.should.a('number')
             done()
         )
@@ -53,39 +55,37 @@ describe('TsqlUtils', () ->
 
 )
 
-schema = db.utils
-
-describe('Schema functions', () ->
+describe('utils functions', () ->
     it('reads table names', (done) ->
-        schema.getTableNames((err, tables) ->
+        utils.getTableNames((err, tables) ->
             checkTables(tables)
             done()
         )
     )
 
     it('reads all columns in the database', (done) ->
-        schema.getColumns((err, columns) ->
+        utils.getColumns((err, columns) ->
             checkColumns(columns)
             done()
         )
     )
 
     it('reads foreign keys', (done) ->
-        schema.getForeignKeys((err, foreignKeys) ->
+        utils.getForeignKeys((err, foreignKeys) ->
             checkForeignKeys(foreignKeys)
             done()
         )
     )
 
     it('reads key columns', (done) ->
-        schema.getKeyColumns((err, keyColumns) ->
+        utils.getKeyColumns((err, keyColumns) ->
             checkKeyColumns(keyColumns)
             done()
         )
     )
 
     it('reads all metadata', (done) ->
-        schema.getAllMetadata((err, m) ->
+        utils.getAllMetadata((err, m) ->
             checkTables(m.tables)
             checkColumns(m.columns)
             checkForeignKeys(m.foreignKeys)

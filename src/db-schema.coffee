@@ -1,5 +1,3 @@
-Database = require("./database")
-
 class DbSchema
     getAllTablesName: (callback) ->
     getConstraints: (callback) ->
