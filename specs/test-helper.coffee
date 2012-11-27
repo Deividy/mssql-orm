@@ -14,11 +14,17 @@ debug = false
 db = null
 defaultEngine = 'mssql'
 
-before((done) ->
+newDb = (cb) ->
     ezekiel.connect(testConfig.databases['mssql'], (err, database) ->
         if (err)
-            throw new Error(err)
+            throw new Error('Could not connect to DB while testing: ' + err)
 
+        cb(database)
+    )
+
+
+before((done) ->
+    newDb((database) ->
         db = database
         done()
     )
@@ -45,4 +51,5 @@ module.exports = {
         console.log(util.inspect(o, true, 5, true))
 
     getDb: (engine = defaultEngine) -> db
+    newDb: newDb
 }

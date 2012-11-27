@@ -1,10 +1,9 @@
 should = require('should')
 h = require('../test-helper')
 
-
 utils = null
 
-checkTables = (tables) -> tables.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
+checkTableNames = (tables) -> tables.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
 
 checkColumns = (columns) ->
     columns.length.should.eql(12)
@@ -12,8 +11,18 @@ checkColumns = (columns) ->
         should.exist(c.name)
         should.exist(c.tableName)
 
+checkKeys = (keys) ->
+    keys.length.should.eql(6)
+    for k in keys
+        should.exist(k.name)
+        should.exist(k.tableName)
+
 checkForeignKeys = (foreignKeys) ->
     foreignKeys.length.should.eql(3)
+    for fk in foreignKeys
+        should.exist(fk.name)
+        should.exist(fk.parentKeyName)
+        should.exist(fk.tableName)
 
 checkKeyColumns = (keyColumns) ->
     keyColumns.length.should.eql(10)
@@ -22,7 +31,6 @@ checkKeyColumns = (keyColumns) ->
         should.exist(c.tableName)
         should.exist(c.columnName)
         should.exist(c.position)
-
 
 
 describe('TsqlUtils', () ->
@@ -57,8 +65,8 @@ describe('TsqlUtils', () ->
 
 describe('utils functions', () ->
     it('reads table names', (done) ->
-        utils.getTableNames((err, tables) ->
-            checkTables(tables)
+        utils.getTableNames((err, tableNames) ->
+            checkTableNames(tableNames)
             done()
         )
     )
@@ -66,6 +74,13 @@ describe('utils functions', () ->
     it('reads all columns in the database', (done) ->
         utils.getColumns((err, columns) ->
             checkColumns(columns)
+            done()
+        )
+    )
+
+    it('reads primary keys and unique constraints', (done) ->
+        utils.getKeys((err, keys) ->
+            checkKeys(keys)
             done()
         )
     )
@@ -85,9 +100,10 @@ describe('utils functions', () ->
     )
 
     it('reads all metadata', (done) ->
-        utils.getAllMetadata((err, m) ->
-            checkTables(m.tables)
+        utils.buildFullSchema((err, m) ->
+            checkTableNames(m.tableNames)
             checkColumns(m.columns)
+            checkKeys(m.keys)
             checkForeignKeys(m.foreignKeys)
             checkKeyColumns(m.keyColumns)
             done()

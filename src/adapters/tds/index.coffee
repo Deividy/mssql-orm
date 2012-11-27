@@ -43,6 +43,7 @@ class TdsAdapter
                     columns = row.metadata.columns
                     rowShape = options.rowShape ? 'object'
 
+                    # MUST: convert SQL bit to JS boolean
                     if (rowShape == 'array')
                         out = (row.getValue(col.index) for col in columns)
                     else

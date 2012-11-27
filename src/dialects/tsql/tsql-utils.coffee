@@ -11,7 +11,6 @@ class TsqlUtils extends DbUtils
         }
 
     getTableNames: (callback) ->
-        tables = []
         query =
             "SELECT TABLE_NAME name FROM INFORMATION_SCHEMA.TABLES
             WHERE TABLE_TYPE = 'BASE TABLE'"
@@ -32,21 +31,29 @@ class TsqlUtils extends DbUtils
 			ORDER BY
 				TABLE_NAME, ORDINAL_POSITION"
 
-        @db.allRows(query, callback)
+        @db.allRows(query, (err, rows) =>
+            callback(err, null) if err
+            for r in rows
+                r.isNullable = r.isNullable == 'YES'
+            callback(null, rows)
+        )
 
-    getConstraints: (callback) ->
+    getKeys: (callback) ->
         query = "
             SELECT CONSTRAINT_NAME name, TABLE_NAME tableName, CONSTRAINT_TYPE type
             FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-            WHERE TABLE_NAME IS NOT NULL
+            WHERE TABLE_NAME IS NOT NULL AND CONSTRAINT_TYPE <> 'FOREIGN KEY'
         "
 
         @db.allRows(query, callback)
 
     getForeignKeys: (callback) ->
         query = "
-            SELECT CONSTRAINT_NAME name, UNIQUE_CONSTRAINT_NAME parentConstraint
-            FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+        SELECT
+            FK.CONSTRAINT_NAME name, FK.UNIQUE_CONSTRAINT_NAME parentKeyName,
+            C.TABLE_NAME tableName, 'FOREIGN KEY' type
+        FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS FK
+        INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS C ON FK.CONSTRAINT_NAME = C.CONSTRAINT_NAME
         "
 
         @db.allRows(query, callback)
@@ -62,10 +69,11 @@ class TsqlUtils extends DbUtils
 
         @db.allRows(query, callback)
 
-    getAllMetadata: (callback) ->
+    buildFullSchema: (callback) ->
         async.parallel({
-            tables: (cb) => @getTableNames(cb)
+            tableNames: (cb) => @getTableNames(cb)
             columns: (cb) => @getColumns(cb)
+            keys: (cb) => @getKeys(cb)
             foreignKeys: (cb) => @getForeignKeys(cb)
             keyColumns: (cb) => @getKeyColumns(cb)
         }, callback)
