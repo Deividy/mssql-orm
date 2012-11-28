@@ -38,7 +38,7 @@ checkKeyColumns = (keyColumns) ->
 
 describe('TsqlUtils', () ->
     before(() ->
-        utils = h.getDb('mssql').utils
+        utils = h.getSharedDb('mssql').utils
     )
 
     it('should create a date now', (done) ->

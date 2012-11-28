@@ -10,7 +10,7 @@ describe('Database', () ->
     )
 
     it('should instantiate the Database class correctly', () ->
-        database = h.getDb()
+        database = h.getSharedDb()
         database.should.be.a('object')
     )
 

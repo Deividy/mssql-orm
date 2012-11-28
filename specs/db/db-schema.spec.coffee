@@ -9,7 +9,7 @@ withDbAndSchema = (f) -> f(h.blankDb(), h.newSchema())
 
 describe('Database loadSchema()', () ->
     before((done) ->
-        h.newDb((freshDb) ->
+        h.connectToDb((freshDb) ->
             testDb = freshDb
 
             testDb.utils.buildFullSchema( (err, s) ->

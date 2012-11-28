@@ -32,7 +32,7 @@ class TdsAdapter
                 fnErr(err)
                 return
 
-            stmt = conn.createStatement(options.stmt ? options.q ? options.query)
+            stmt = conn.createStatement(options.stmt)
 
             doRow = options.onRow?
             doAllRows = options.onAllRows?

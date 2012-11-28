@@ -30,12 +30,12 @@ newSchema = () -> {
 
 newAliasedSchema = () -> {
     tables: [
-        { name: 'tblCustomers', alias: 'Customers' }
-        { name: 'tblOrders', alias: 'Orders' }
+        { name: 'Customers', alias: 'customer' }
+        { name: 'Orders', alias: 'order' }
     ]
     columns: [
-        { tableName: 'tblCustomers', name: 'zCustomerID', alias: 'id', position: 1 }
-        { tableName: 'tblCustomers', name: 'zCustomerFirstName', alias: 'FirstName', position: 2 }
+        { tableName: 'Customers', name: 'id', alias: 'CustomerId', position: 1 }
+        { tableName: 'Customers', name: 'FirstName', alias: 'CustomerFirstName', position: 2 }
     ]
     keys: []
     foreignKeys: []
@@ -65,7 +65,7 @@ assertSqlFormatting = (formatter, sql, expected, debug) ->
 
     ret.should.eql(expected)
 
-newDb = (cb) ->
+connectToDb = (cb) ->
     ezekiel.connect(testConfig.databases['mssql'], (err, database) ->
         if (err)
             throw new Error('Could not connect to DB while testing: ' + err)
@@ -74,7 +74,7 @@ newDb = (cb) ->
     )
 
 before((done) ->
-    newDb((database) ->
+    connectToDb((database) ->
         db = database
         done()
     )
@@ -90,8 +90,8 @@ module.exports = {
 
     inspect: (o) -> console.log(util.inspect(o, true, 5, true))
 
-    getDb: (engine = defaultEngine) -> db
-    newDb: newDb
+    getSharedDb: (engine = defaultEngine) -> db
+    connectToDb: connectToDb
 
     newSchema: newSchema
     newAliasedSchema: newAliasedSchema

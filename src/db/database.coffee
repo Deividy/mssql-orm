@@ -2,6 +2,7 @@ _ = require('underscore')
 
 dbObjects = require('./index')
 { DbObject, Table, Column, Key, ForeignKey } = dbObjects
+{ SqlToken } = require('../sql')
 
 class Database extends DbObject
     constructor: (@config = {}) ->
@@ -29,14 +30,20 @@ class Database extends DbObject
         }
         @execute(query, opt, callback)
 
-    execute: (query, opt, callback) ->
-        if _.isString(query)
-            opt.stmt = query
-        else
-            _.defaults(opt, query)
+    _generateSql: (o) ->
+        if (o.stmt instanceof SqlToken)
+            o.stmt = o.stmt.toSql(@formatter)
 
-        opt.onError = (e) -> callback(e)
-        @adapter.execute(opt)
+    execute: (query, opt, callback) ->
+        if (_.isString(query) || query instanceof SqlToken)
+            o = { stmt: query }
+            _.defaults(o, opt)
+        else
+            o = _.defaults({}, opt, query)
+
+        @_generateSql(o)
+        o.onError ?= (e) -> callback(e)
+        @adapter.execute(o)
 
     array: (query, callback) ->
         a = []
