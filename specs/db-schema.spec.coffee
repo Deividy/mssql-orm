@@ -49,6 +49,15 @@ describe('Database loadSchema()', () ->
         )
     )
 
+    it('Allows tables with only an alias', ->
+        withDbAndSchema((db, s) ->
+            s.tables[0].name = null
+            s.tables[0].alias = 'NewSlang'
+            db.loadSchema(s)
+            db.tables.length.should.eql(2)
+        )
+    )
+
     it('Throws if a name clashes', ->
         clash = () -> testDb.tablesByName.Customers.alias = 'Orders'
         clash.should.throw(/it is already taken/)

@@ -13,7 +13,7 @@ Database = require('./database')
 # a mess for the caller to correctly check for errors. We go for this little factory instead, and as
 # a bonus we can implement methods that create a DB before connecting to it, stuff like that.
 #
-# DB can still be instantiated directly in tests and for advanced users.
+# Database can still be instantiated directly in tests and for advanced users.
 
 e = ezekiel = {
     connect: (config, cb) ->

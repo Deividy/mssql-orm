@@ -29,7 +29,7 @@ class DbObject
 # whose value is a SQL expression, and this column would not have a name.
 #
 # However, EVERY object must have an alias, If one is not provided, we set the alias equal to the
-# name. This makes it really easy to develop and use Ezekiel, because you can always trust that
+# name. This makes it easy to develop and use Ezekiel, because you can always trust that
 # alias will be there. If you're not using aliases and/or virtual objects, then no harm done, all
 # aliases will equal names, and you're good to go.
 class AliasedObject extends DbObject
