@@ -1,11 +1,10 @@
 h = require('../test-helper')
 sql = h.requireSrc('sql')
-SqlFormatter = h.requireSrc('dialects/sql-formatter')
 
 describe('SqlSelect', () ->
     it('detects expressions as columns', ->
         s = sql.from(['customers', 'C']).select( ["LEN(LastName)", "LenLastName"] )
-        h.assert(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
+        h.assertSql(s, "SELECT LEN(LastName) as [LenLastName] FROM [customers] as [C]")
     )
 
     it('handles two objects ANDed', () ->
@@ -19,7 +18,7 @@ describe('SqlSelect', () ->
         exp += "WHERE ([users].[age] = 22 AND [users].[name] = 'deividy' "
         exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
 
-        h.assert(s, exp, false)
+        h.assertSql(s, exp, false)
     )
 
     it('supports table aliases', () ->
@@ -33,7 +32,7 @@ describe('SqlSelect', () ->
         exp += "WHERE (([u].[age] = 22 AND [u].[name] = 'deividy') "
         exp += "OR ([u].[test] = 123 AND [u].[testing] = 1234))"
 
-        h.assert(s, exp)
+        h.assertSql(s, exp)
     )
 
     it('supports JOINS', () ->
@@ -45,7 +44,7 @@ describe('SqlSelect', () ->
         exp += "FROM [users] as [u] INNER JOIN [messages] as [messages] ON "
         exp += "[U].[id] = [Messages].[UserId]"
 
-        h.assert(s, exp, false)
+        h.assertSql(s, exp, false)
     )
 
     it('supports ORDER BY and GROUP BY', () ->
@@ -58,13 +57,13 @@ describe('SqlSelect', () ->
         exp += "GROUP BY [0].[City], Foo + Bar "
         exp += "ORDER BY [u].[name] DESC, LEN(LastName) DESC, [u].[JoinDate] DESC"
 
-        h.assert(s, exp, false)
+        h.assertSql(s, exp, false)
     )
 
     it('can be instantiated via sql.select', () ->
         s = sql.select('FirstName', 'LastName').from('Customers')
         exp = "SELECT [FirstName] as [FirstName], [LastName] as [LastName] FROM [Customers] as [Customers]"
 
-        h.assert(s, exp, false)
+        h.assertSql(s, exp, false)
     )
 )

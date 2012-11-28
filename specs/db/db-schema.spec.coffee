@@ -5,23 +5,7 @@ should = require('should')
 { Table, Column } = h.requireSrc('db')
 
 testDb = null
-
-newSchema = () ->
-    metaData = {
-        tables: [
-            { name: 'Customers', }
-            { name: 'Orders' }
-        ]
-        columns: [
-            { tableName: 'Customers', name: 'Id', position: 1 }
-            { tableName: 'Customers', name: 'FirstName', position: 2 }
-        ]
-        keys: []
-        foreignKeys: []
-        keyColumns: []
-    }
-
-withDbAndSchema = (f) -> f(h.blankDb(), newSchema())
+withDbAndSchema = (f) -> f(h.blankDb(), h.newSchema())
 
 describe('Database loadSchema()', () ->
     before((done) ->
