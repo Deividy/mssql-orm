@@ -1,6 +1,9 @@
 fs = require('fs')
 h = require('./test-helper')
 
+should = require('should')
+{ Table, Column } = h.requireSrc('db-objects')
+
 testDb = null
 
 newSchema = () ->
@@ -13,6 +16,9 @@ newSchema = () ->
             { tableName: 'Customers', name: 'Id', position: 1 }
             { tableName: 'Customers', name: 'FirstName', position: 2 }
         ]
+        keys: []
+        foreignKeys: []
+        keyColumns: []
     }
 
 withDbAndSchema = (f) -> f(h.blankDb(), newSchema())
@@ -51,10 +57,18 @@ describe('Database loadSchema()', () ->
 
     it('Allows tables with only an alias', ->
         withDbAndSchema((db, s) ->
-            s.tables[0].name = null
-            s.tables[0].alias = 'NewSlang'
+            s.tables.push({ alias: 'FakePlasticTable' })
             db.loadSchema(s)
-            db.tables.length.should.eql(2)
+            db.tables.length.should.eql(3)
+
+            t = db.tablesByAlias.FakePlasticTable
+            t.should.be.an.instanceof(Table)
+            should.not.exist(t.name)
+            t.alias.should.eql('FakePlasticTable')
+
+            c = new Column(t, { name: 'Id' })
+            c.table.should.eql(t)
+            t.columns.length.should.eql(1)
         )
     )
 

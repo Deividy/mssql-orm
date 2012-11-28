@@ -91,7 +91,10 @@ class Column extends AliasedObject
         @isPartOfKey = false
         @isReadOnly = @isIdentity || @isComputed
         @isRequired = !@isNullable
-        @table.addEnforcingPosition(@table.columns, @) if @position?
+        if @position?
+            @table.addEnforcingPosition(@table.columns, @)
+        else
+            @table.columns.push(@)
 
     siblingsByName: () -> @table.columnsByName
     siblingsByAlias: () -> @table.columnsByAlias
