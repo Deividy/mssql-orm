@@ -112,6 +112,14 @@ class SqlFormatter
         for f in sql.tables
             if _.isString(f.expr)
                 f._model = @db.tablesByAlias[f.expr]
+
+        for c in sql.columns
+            if _.isString(c.expr)
+                for t in sql.tables when t._model?
+                    column = t._model.columnsByAlias[c.expr]
+                    if column?
+                        c._model = column
+                        break
                     
         ret = "SELECT #{@columns(sql.columns)} FROM #{@tables(sql.tables)}"
 
