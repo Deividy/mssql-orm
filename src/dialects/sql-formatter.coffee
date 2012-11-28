@@ -109,14 +109,9 @@ class SqlFormatter
     select: (sql) ->
         q = "SELECT "
 
-        knownTables = []
-
         for f in sql.tables
             if _.isString(f.expr)
-                table = @db.tablesByAlias[f.expr]
-                f._dbObject = table
-                if table?
-                    knownTables.push(f)
+                f._model = @db.tablesByAlias[f.expr]
                     
         ret = "SELECT #{@columns(sql.columns)} FROM #{@tables(sql.tables)}"
 
