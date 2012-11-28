@@ -3,26 +3,18 @@ _ = require("underscore")
 
 class SqlAliasedExpression extends SqlToken
     constructor: (a) ->
-        if _.isString(a)
-            @expr = @alias = a
-        else if _.isArray(a)
+        if _.isArray(a)
             [@expr, @alias] = a
         else
             @expr = a
 
-class SqlColumn extends SqlAliasedExpression
-    constructor: (a) ->
-        super(a)
-        @expr = sql.nameOrExpr(@expr)
+        # This is only used by formatters, users don't have to worry about it
+        @_model = null
 
+class SqlColumn extends SqlAliasedExpression
     toSql: (f) -> f.column(@)
 
 class SqlFrom extends SqlAliasedExpression
-    constructor: (a) ->
-        super(a)
-        if _.isString(@expr)
-            @expr = sql.name(@expr)
-
     toSql: (f) -> f.from(@)
 
 class SqlJoin extends SqlFrom
@@ -50,9 +42,7 @@ class SqlSelect extends SqlStatement
     addFrom: (table, a) -> a.push(table)
 
     select: (columns...) ->
-        for c in columns
-            @columns.push(new SqlColumn(c))
-
+        @columns.push(new SqlColumn(c)) for c in columns
         return @
 
     distinct: () ->

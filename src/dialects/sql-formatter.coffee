@@ -8,7 +8,11 @@ rgxParseName = ///
     \.?         # optional . at the end
 ///g
 
+rgxExpression = /[()\+\*\-/]/
+
 class SqlFormatter
+    constructor: (@db) ->
+
     f: (v) ->
         return v.toSql(@) if v instanceof SqlToken
         return @literal(v)
@@ -20,6 +24,8 @@ class SqlFormatter
         return l.toString()
 
     parens: (contents) -> "(#{contents.toSql(@)})"
+
+    isExpression: (e) -> rgxExpression.test(e)
 
     relop: (left, op, right) ->
         # MUST: replace with data driven approach
@@ -57,17 +63,31 @@ class SqlFormatter
     delimit: (s) ->
         return "[#{s}]"
 
-    column: (c) ->
-        expr = c.expr
-        alias = c.alias
+    aliasedExpression: (e) ->
+        expr = e.expr
+        alias = e.alias
 
-        if (expr instanceof SqlSelect)
-            s = "(#{@select(expr)})"
-        
-        s = expr.toSql(@)
+        if (expr instanceof SqlToken)
+            s = "(#{expr.toSql(@)})"
+        else if (e._model?)
+            # MUST: we assume the model is a DB object at this point. We'll need to handle
+            # virtual columns, tables, etc.
+            s = @delimit(e._model.name)
+            alias = e.expr
+        else if @isExpression(expr)
+            s = "#{expr}"
+        else if _.isString(expr)
+            # MUST: use a different method here that parses a raw SQL name
+            s = @delimit(expr)
+            alias ?= expr
+        else
+            s = @literal(expr)
 
         s += " as #{@delimit(alias)}" if (alias?)
         return s
+
+
+    column: (c) -> @aliasedExpression(c)
 
     doList: (collection, separator = ', ', prelude = '') ->
         return '' unless collection?.length > 0
@@ -82,17 +102,28 @@ class SqlFormatter
 
     joins: (joinList) -> @doList(joinList, ' ')
 
-    from: (f) -> @column(f)
+    from: (f) -> @aliasedExpression(f)
     join: (j) ->
         str = " INNER JOIN " + @column(j) + " ON " + j.predicate.toSql(@)
 
-    select: (c) ->
-        ret = "SELECT #{@columns(c.columns)} FROM #{@tables(c.tables)}"
+    select: (sql) ->
+        q = "SELECT "
 
-        ret += @joins(c.joins)
-        ret += @where(c)
-        ret += @groupBy(c)
-        ret += @orderBy(c)
+        knownTables = []
+
+        for f in sql.tables
+            if _.isString(f.expr)
+                table = @db.tablesByAlias[f.expr]
+                f._dbObject = table
+                if table?
+                    knownTables.push(f)
+                    
+        ret = "SELECT #{@columns(sql.columns)} FROM #{@tables(sql.tables)}"
+
+        ret += @joins(sql.joins)
+        ret += @where(sql)
+        ret += @groupBy(sql)
+        ret += @orderBy(sql)
         return ret
 
     where: (c) ->
