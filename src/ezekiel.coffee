@@ -69,21 +69,17 @@ class Database extends DbObject
         @execute(query, opt, callback)
 
     loadSchema: (schema) ->
-        for n in schema.tableNames
-            table = new Table(@, n)
-            @tables.push(table)
-            @tablesByName[n] = table
-
+        @addSchemaItems(Table, schema.tables, @)
         @addSchemaItems(Column, schema.columns)
         @addSchemaItems(Key, schema.keys)
         @addSchemaItems(ForeignKey, schema.foreignKeys)
 
         @addKeyColumns(schema.keyColumns)
 
-    addSchemaItems: (constructor, list) ->
+    addSchemaItems: (constructor, list, parent) ->
         for i in list
-            t = @tablesByName[i.tableName]
-            new constructor(t, i)
+            p = parent ? @tablesByName[i.tableName]
+            new constructor(p, i)
 
     addKeyColumns: (list) ->
         for i in list

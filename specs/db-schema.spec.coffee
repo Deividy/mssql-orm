@@ -5,7 +5,10 @@ testDb = null
 
 newSchema = () ->
     metaData = {
-        tableNames: ['Customers', 'Orders']
+        tables: [
+            { name: 'Customers', }
+            { name: 'Orders' }
+        ]
         columns: [
             { tableName: 'Customers', name: 'Id', position: 1 }
             { tableName: 'Customers', name: 'FirstName', position: 2 }

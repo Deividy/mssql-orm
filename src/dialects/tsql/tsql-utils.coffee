@@ -10,13 +10,14 @@ class TsqlUtils extends DbUtils
             dbUtcOffset: "SELECT DATEDIFF(mi, GETUTCDATE(), GETDATE())"
         }
 
-    getTableNames: (callback) ->
+    getTables: (callback) ->
         query =
             "SELECT TABLE_NAME name FROM INFORMATION_SCHEMA.TABLES
             WHERE TABLE_TYPE = 'BASE TABLE'"
 
-        @db.array(query, (err, a) ->
-            if err then callback(err, null) else callback(null, a.sort())
+        @db.allRows(query, (err, rows) ->
+            if err then callback(err, null)
+            callback(null, _.sortBy(rows, (r) -> r.name))
         )
 
     getColumns: (callback) ->
@@ -71,7 +72,7 @@ class TsqlUtils extends DbUtils
 
     buildFullSchema: (callback) ->
         async.parallel({
-            tableNames: (cb) => @getTableNames(cb)
+            tables: (cb) => @getTables(cb)
             columns: (cb) => @getColumns(cb)
             keys: (cb) => @getKeys(cb)
             foreignKeys: (cb) => @getForeignKeys(cb)

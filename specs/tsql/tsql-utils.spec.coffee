@@ -1,9 +1,12 @@
 should = require('should')
+_ = require('underscore')
 h = require('../test-helper')
 
 utils = null
 
-checkTableNames = (tables) -> tables.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
+checkTables = (tables) ->
+    names = _.map(tables, ((t) -> t.name))
+    names.should.eql(['Customers', 'OrderLines', 'Orders', 'Products'])
 
 checkColumns = (columns) ->
     columns.length.should.eql(12)
@@ -64,9 +67,9 @@ describe('TsqlUtils', () ->
 )
 
 describe('utils functions', () ->
-    it('reads table names', (done) ->
-        utils.getTableNames((err, tableNames) ->
-            checkTableNames(tableNames)
+    it('reads tables', (done) ->
+        utils.getTables((err, tables) ->
+            checkTables(tables)
             done()
         )
     )
@@ -101,7 +104,7 @@ describe('utils functions', () ->
 
     it('reads all metadata', (done) ->
         utils.buildFullSchema((err, m) ->
-            checkTableNames(m.tableNames)
+            checkTables(m.tables)
             checkColumns(m.columns)
             checkKeys(m.keys)
             checkForeignKeys(m.foreignKeys)

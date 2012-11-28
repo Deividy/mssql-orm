@@ -17,7 +17,8 @@ class DbObject
         array.push(newbie)
 
 class Table extends DbObject
-    constructor: (@db, @name) ->
+    constructor: (@db, schema) ->
+        _.defaults(@, schema)
         @columns = []
 
         @columnsByName = {}
@@ -30,6 +31,9 @@ class Table extends DbObject
 
         @hasMany = []
         @belongsTo = []
+
+        @db.tables.push(@)
+        @db.tablesByName[@name] = @
 
 
     addColumn: (newbie) ->
