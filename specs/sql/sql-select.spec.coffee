@@ -13,10 +13,10 @@ describe('SqlSelect', () ->
                 .where({ age: 22, name: 'deividy' })
                 .and({ test: 123, testing: 1234 })
 
-        exp = "SELECT [users].[login] as [login], [users].[zid] as [id], [users].[zname] as [name] "
+        exp = "SELECT [login] as [login], [zid] as [id], [zname] as [name] "
         exp += "FROM [users] as [users] "
-        exp += "WHERE ([users].[age] = 22 AND [users].[name] = 'deividy' "
-        exp += "AND ([users].[test] = 123 AND [users].[testing] = 1234))"
+        exp += "WHERE ([age] = 22 AND [name] = 'deividy' "
+        exp += "AND ([test] = 123 AND [testing] = 1234))"
 
         h.assertSql(s, exp, false)
     )
@@ -27,10 +27,10 @@ describe('SqlSelect', () ->
                 .where({ age: 22, name: 'deividy' })
                 .or({ test: 123, testing: 1234 })
 
-        exp = "SELECT [u].[login] as [login], [u].[zid] as [id], [u].[zname] as [name] "
+        exp = "SELECT [login] as [login], [zid] as [id], [zname] as [name] "
         exp += "FROM [users] as [u] "
-        exp += "WHERE (([u].[age] = 22 AND [u].[name] = 'deividy') "
-        exp += "OR ([u].[test] = 123 AND [u].[testing] = 1234))"
+        exp += "WHERE (([age] = 22 AND [name] = 'deividy') "
+        exp += "OR ([test] = 123 AND [testing] = 1234))"
 
         h.assertSql(s, exp)
     )
@@ -40,7 +40,7 @@ describe('SqlSelect', () ->
             .select("login", [ 'zid', 'id' ], [ 'zname', 'name' ])
             .join("messages", { "U.id": sql.name("Messages.UserId")})
 
-        exp = "SELECT [u].[login] as [login], [u].[zid] as [id], [u].[zname] as [name] "
+        exp = "SELECT [login] as [login], [zid] as [id], [zname] as [name] "
         exp += "FROM [users] as [u] INNER JOIN [messages] as [messages] ON "
         exp += "[U].[id] = [Messages].[UserId]"
 
@@ -53,9 +53,9 @@ describe('SqlSelect', () ->
             .orderBy('name', 'LEN(LastName)', ["JoinDate", 'DESC'])
             .groupBy('City', 'Foo + Bar')
 
-        exp = "SELECT [u].[login] as [login] FROM [users] as [u] "
-        exp += "GROUP BY [0].[City], Foo + Bar "
-        exp += "ORDER BY [u].[name] DESC, LEN(LastName) DESC, [u].[JoinDate] DESC"
+        exp = "SELECT [login] as [login] FROM [users] as [u] "
+        exp += "GROUP BY [City], Foo + Bar "
+        exp += "ORDER BY [name] DESC, LEN(LastName) DESC, [JoinDate] DESC"
 
         h.assertSql(s, exp, false)
     )

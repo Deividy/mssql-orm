@@ -3,17 +3,17 @@ _ = require('underscore')
 sql = {
     rgxExpression: /[()\+\*\-/]/
 
-    nameOrExpr: (s, prefixHint) ->
+    nameOrExpr: (s) ->
         return s if s instanceof SqlToken
-        if sql.rgxExpression.test(s) then sql.expr(s) else sql.name(s, prefixHint)
+        if sql.rgxExpression.test(s) then sql.expr(s) else sql.name(s)
 
     verbatim: (s) -> new SqlVerbatim(s)
     predicate: (p...) -> new SqlPredicate(p)
 
-    name: (n, prefixHint) ->
+    name: (n) ->
         return n if n instanceof SqlToken
         return new SqlMultiPartName(n) if _.isArray(n)
-        return new SqlName(n, prefixHint)
+        return new SqlName(n)
 
     expr: (e) -> new SqlExpression(e)
     and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
@@ -49,7 +49,7 @@ class SqlLiteral extends SqlToken
     toSql: (f) -> f.literal(@l)
 
 class SqlName extends SqlToken
-    constructor: (@name, @prefixHint) ->
+    constructor: (@name) ->
     toSql: (f) -> f.name(@)
 
 class SqlMultiPartName extends SqlToken

@@ -17,13 +17,10 @@ describe('SqlFormatter', () ->
         multi = sql.name(["Db", "Schema", "Table"])
         multi.toSql(f).should.eql("[Db].[Schema].[Table]")
 
-        noHint = sql.name("Users")
-        noHint.toSql(f).should.eql("[Users]")
+        noPrefix = sql.name("Users")
+        noPrefix.toSql(f).should.eql("[Users]")
 
-        withHint = sql.name("Name", "U")
-        withHint.toSql(f).should.eql("[U].[Name]")
-
-        overridenHint = sql.name("O.Name", "U")
-        overridenHint.toSql(f).should.eql("[O].[Name]")
+        withPrefix = sql.name("O.Name")
+        withPrefix.toSql(f).should.eql("[O].[Name]")
     )
 )

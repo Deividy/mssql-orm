@@ -11,9 +11,9 @@ class SqlAliasedExpression extends SqlToken
             @expr = a
 
 class SqlColumn extends SqlAliasedExpression
-    constructor: (a, prefixHint) ->
+    constructor: (a) ->
         super(a)
-        @expr = sql.nameOrExpr(@expr, prefixHint)
+        @expr = sql.nameOrExpr(@expr)
 
     toSql: (f) -> f.column(@)
 
@@ -33,8 +33,8 @@ class SqlJoin extends SqlFrom
     toSql: (f) -> f.join(@)
 
 class SqlOrdering extends SqlFrom
-    constructor: (expr, direction, tableHint) ->
-        @expr = sql.nameOrExpr(expr, tableHint)
+    constructor: (expr, direction) ->
+        @expr = sql.nameOrExpr(expr)
         @direction = if direction = 'DESC' then 'DESC' else 'ASC'
 
     toSql: (f) -> f.ordering(@)
@@ -47,13 +47,11 @@ class SqlSelect extends SqlStatement
 
         (@from(t) for t in tableList)
 
-    addFrom: (table, a) ->
-        a.push(table)
-        @tableHint = table.alias || @tableHint
+    addFrom: (table, a) -> a.push(table)
 
     select: (columns...) ->
         for c in columns
-            @columns.push(new SqlColumn(c, @tableHint))
+            @columns.push(new SqlColumn(c))
 
         return @
 
@@ -98,16 +96,15 @@ class SqlSelect extends SqlStatement
 
     addTerms: (predicate, terms) ->
         @lastPredicate = SqlPredicate.addOrCreate(predicate, terms)
-        @fillTableHints()
         return @lastPredicate
 
     orderBy: (exprs...) ->
         @orderings ?= []
         for e in exprs
             if _.isArray(e)
-                o = new SqlOrdering(e[0], e[1], @tableHint)
+                o = new SqlOrdering(e[0], e[1])
             else
-                o = new SqlOrdering(e, null, @tableHint)
+                o = new SqlOrdering(e, null)
 
             @orderings.push(o)
         return @
@@ -116,24 +113,12 @@ class SqlSelect extends SqlStatement
         return @where(terms...) unless @lastPredicate
 
         @lastPredicate.and(terms...)
-        @fillTableHints()
         return @
 
     or: (terms...) ->
         return @where(sql.or(terms...)) unless @lastPredicate
-
         @lastPredicate.or(terms...)
-        @fillTableHints()
         return @
-
-    fillTableHints: ->
-        return unless (hint = @tableHint)
-
-        @lastPredicate.cascade((n) ->
-            return false if (n instanceof SqlSelect)
-            if (n instanceof SqlName && !n.prefixHint?)
-                n.prefixHint = hint
-        )
 
     toSql: (f) ->
         return f.select(@)
