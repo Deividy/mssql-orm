@@ -1,7 +1,6 @@
-{ SqlUpdate } = sql = require('../src/sql')
-SqlFormatter = require('../src/sql-formatter')
-
-h = require('./test-helper')
+h = require('../test-helper')
+{ SqlUpdate } = sql = h.requireSrc('sql')
+SqlFormatter = h.requireSrc('dialects/sql-formatter')
 
 describe('SqlUpdate', () ->
     it('works for a basic statement', ->

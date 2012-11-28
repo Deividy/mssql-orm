@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlToken, SqlName, SqlFilteredStatement } = sql = require('./sql')
+{ SqlToken, SqlName, SqlFilteredStatement } = sql = require('./index')
 
 class SqlUpdateExpression extends SqlToken
     constructor: (column, @value) ->

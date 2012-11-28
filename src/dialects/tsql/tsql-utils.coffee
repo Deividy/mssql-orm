@@ -1,6 +1,6 @@
 _ = require('underscore')
 async = require('async')
-DbUtils = require('../../db-utils')
+DbUtils = require('../db-utils')
 
 class TsqlUtils extends DbUtils
     constructor: (@db) ->

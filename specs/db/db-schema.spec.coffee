@@ -1,8 +1,8 @@
+h = require('../test-helper')
 fs = require('fs')
-h = require('./test-helper')
 
 should = require('should')
-{ Table, Column } = h.requireSrc('db-objects')
+{ Table, Column } = h.requireSrc('db')
 
 testDb = null
 

@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./sql')
+{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./index')
 
 class SqlAliasedExpression extends SqlToken
     constructor: (a) ->

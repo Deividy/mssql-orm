@@ -1,6 +1,6 @@
 _ = require('underscore')
 
-dbObjects = require('./db-objects')
+dbObjects = require('./index')
 { DbObject, Table, Column, Key, ForeignKey } = dbObjects
 
 class Database extends DbObject

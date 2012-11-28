@@ -1,7 +1,7 @@
-{ SqlDelete } = sql = require('../src/sql')
-SqlFormatter = require('../src/sql-formatter')
+h = require('../test-helper')
+{ SqlDelete } = sql = h.requireSrc('sql')
+SqlFormatter = h.requireSrc('dialects/sql-formatter')
 
-h = require('./test-helper')
 
 describe('SqlDelete', () ->
     it('works for a basic statement', ->

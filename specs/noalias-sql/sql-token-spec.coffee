@@ -1,4 +1,5 @@
-{ SqlToken, SqlExpression, SqlName, SqlMultiPartName } = sql = require('../src/sql')
+h = require('../test-helper')
+{ SqlToken, SqlExpression, SqlName, SqlMultiPartName } = sql = h.requireSrc('sql')
 
 describe('SqlToken', () ->
     it('Can tell expressions from names', ->

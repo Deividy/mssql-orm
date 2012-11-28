@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlFilteredStatement } = sql = require('./sql')
+{ SqlPredicate, SqlName, SqlFilteredStatement } = sql = require('./index')
 
 class SqlDelete extends SqlFilteredStatement
     toSql: (f) ->

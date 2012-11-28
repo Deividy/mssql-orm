@@ -6,9 +6,9 @@ testConfig = require('./config.json')
 sourceFolder = path.resolve(__dirname, '../src')
 requireSrc = (pathToFile) -> require(path.resolve(sourceFolder, pathToFile))
 
-SqlFormatter = requireSrc('sql-formatter')
+SqlFormatter = requireSrc('dialects/sql-formatter')
 ezekiel = requireSrc('ezekiel')
-Database = requireSrc('database')
+Database = requireSrc('db/database')
 
 f = new SqlFormatter()
 debug = false

@@ -1,7 +1,7 @@
-{ SqlInsert } = sql = require('../src/sql')
-SqlFormatter = require('../src/sql-formatter')
+h = require('../test-helper')
 
-h = require('./test-helper')
+{ SqlInsert } = sql = h.requireSrc('sql')
+SqlFormatter = h.requireSrc('dialects/sql-formatter')
 
 describe('SqlInsert', () ->
     it('works for a basic statement', ->

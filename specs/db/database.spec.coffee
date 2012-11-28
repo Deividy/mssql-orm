@@ -1,5 +1,5 @@
+h = require('../test-helper')
 fs = require('fs')
-h = require('./test-helper')
 
 env = "development"
 database = null

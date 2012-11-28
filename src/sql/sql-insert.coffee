@@ -1,5 +1,5 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlStatement } = sql = require('./sql')
+{ SqlPredicate, SqlName, SqlStatement } = sql = require('./index')
 
 class SqlInsert extends SqlStatement
     toSql: (f) ->

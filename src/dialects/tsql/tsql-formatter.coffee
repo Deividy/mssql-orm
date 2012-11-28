@@ -1,4 +1,4 @@
-SqlFormatter = require('../../sql-formatter')
+SqlFormatter = require('../sql-formatter')
 
 class TsqlFormatter extends SqlFormatter
 
