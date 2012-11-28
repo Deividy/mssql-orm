@@ -163,6 +163,7 @@ class SqlFilteredStatement extends SqlStatement
         return @
         
 module.exports = sql
+
 _.extend(sql, {
     SqlToken: SqlToken
     SqlExpression: SqlExpression

@@ -8,6 +8,7 @@ requireSrc = (pathToFile) -> require(path.resolve(sourceFolder, pathToFile))
 
 SqlFormatter = requireSrc('sql-formatter')
 ezekiel = requireSrc('ezekiel')
+Database = requireSrc('database')
 
 f = new SqlFormatter()
 debug = false
@@ -52,4 +53,5 @@ module.exports = {
 
     getDb: (engine = defaultEngine) -> db
     newDb: newDb
+    blankDb: () -> new Database({ database: 'blank' })
 }

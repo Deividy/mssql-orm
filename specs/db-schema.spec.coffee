@@ -15,6 +15,8 @@ newSchema = () ->
         ]
     }
 
+withDbAndSchema = (f) -> f(h.blankDb(), newSchema())
+
 describe('Database loadSchema()', () ->
     before((done) ->
         h.newDb((freshDb) ->
@@ -33,11 +35,27 @@ describe('Database loadSchema()', () ->
         testDb.tables.length.should.eql(4)
     )
 
-    it('Detects clashes in column positions', ->
-        h.newDb((freshDb) ->
-            s = newSchema()
+    it('Detects clashes in column positions', () ->
+        withDbAndSchema((db, s) ->
             s.columns[1].position = 1
-            (() -> freshDb.loadSchema(s)).should.throw(/Expected position/)
+            (() -> db.loadSchema(s)).should.throw(/Expected position/)
         )
+    )
+
+    it('Throws if name and alias are missing', ->
+        withDbAndSchema((db, s) ->
+            s.tables[0].name = null
+            (() -> db.loadSchema(s)).should.throw(/must provide/)
+        )
+    )
+
+    it('Throws if a name clashes', ->
+        clash = () -> testDb.tablesByName.Customers.alias = 'Orders'
+        clash.should.throw(/it is already taken/)
+    )
+
+    it('Throws if an alias clashes', ->
+        clash = () -> testDb.tablesByName.Customers.alias = 'Orders'
+        clash.should.throw(/it is already taken/)
     )
 )
