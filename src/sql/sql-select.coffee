@@ -12,9 +12,6 @@ class SqlAliasedExpression extends SqlToken
         @_model = null
         @_token = null
 
-class SqlColumn extends SqlAliasedExpression
-    toSql: (f) -> f.column(@)
-
 class SqlFrom extends SqlAliasedExpression
     toSql: (f) -> f.from(@)
 
@@ -25,25 +22,20 @@ class SqlJoin extends SqlFrom
 
     toSql: (f) -> f.join(@)
 
-class SqlOrdering extends SqlFrom
-    constructor: (expr, direction) ->
-        @expr = sql.nameOrExpr(expr)
-        @direction = if direction = 'DESC' then 'DESC' else 'ASC'
-
-    toSql: (f) -> f.ordering(@)
-
 class SqlSelect extends SqlStatement
     constructor: (tableList...) ->
         @columns = []
         @tables = []
         @joins = []
+        @orderings = []
+        @groupings = []
 
         (@from(t) for t in tableList)
 
     addFrom: (table, a) -> a.push(table)
 
     select: (columns...) ->
-        @columns.push(new SqlColumn(c)) for c in columns
+        @columns.push(columns...)
         return @
 
     distinct: () ->
@@ -75,10 +67,8 @@ class SqlSelect extends SqlStatement
         @whereClause = @addTerms(@whereClause, terms)
         return @
 
-    groupBy: (exprs...) ->
-        @groupings ?= []
-
-        @groupings.push( (_.map(exprs, sql.nameOrExpr))... )
+    groupBy: (atoms...) ->
+        @groupings.push(atoms...)
         return @
 
     having: (terms...) ->
@@ -89,15 +79,8 @@ class SqlSelect extends SqlStatement
         @lastPredicate = SqlPredicate.addOrCreate(predicate, terms)
         return @lastPredicate
 
-    orderBy: (exprs...) ->
-        @orderings ?= []
-        for e in exprs
-            if _.isArray(e)
-                o = new SqlOrdering(e[0], e[1])
-            else
-                o = new SqlOrdering(e, null)
-
-            @orderings.push(o)
+    orderBy: (orderings...) ->
+        @orderings.push(orderings...)
         return @
 
     and: (terms...) ->

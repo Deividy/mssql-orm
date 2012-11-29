@@ -58,19 +58,28 @@ class SqlFormatter
 
         return new SqlFullName(parts)
 
-    delimit: (s) ->
-        return "[#{s}]"
+    delimit: (s) -> "[#{s}]"
+
+    _firstOrSelf: (o) -> if _.isArray(o) then o[0] else o
+    _secondOrNull: (o) -> if _.isArray(o) then o[1] else null
 
     column: (c) ->
-        token = @tokenizeAtom(c.atom)
+        atom = @_firstOrSelf(c)
+        alias = @_secondOrNull(c)
+        return @_doColumn(atom, alias, true)
+
+    _doColumn: (atom, alias, addAlias = false) ->
+        token = @tokenizeAtom(atom)
         model = @findColumnModel(token)
         s = @_doToken(token, model)
 
-        alias = @_doAlias(token, model, c.alias)
-        if (alias?)
-            s += " as #{@delimit(alias)}"
+        if addAlias
+            alias = @_doAlias(token, model, alias)
+            if (alias?)
+                s += " as #{@delimit(alias)}"
 
         return s
+
 
     _doToken: (token, model) ->
         if (model?)
@@ -103,9 +112,7 @@ class SqlFormatter
 
 
     relop: (left, op, right) ->
-        leftToken = @tokenizeAtom(left)
-        model = @findColumnModel(leftToken)
-        l = @_doToken(leftToken, model)
+        l = @_doColumn(left)
         
         # MUST: replace with data driven approach
         op = op.toUpperCase()
@@ -119,18 +126,18 @@ class SqlFormatter
 
         return "#{l} #{op} #{r}"
 
-    doList: (collection, separator = ', ', prelude = '') ->
+    doList: (collection, fn = @f, separator = ', ', prelude = '') ->
         return '' unless collection?.length > 0
-        results = (i.toSql(@) for i in collection)
+        results = (fn.call(@, i) for i in collection)
         return prelude + results.join(separator)
 
     columns: (columnList) ->
         return "*" if (columnList.length == 0)
-        return @doList(columnList)
+        return @doList(columnList, @column)
 
     tables: (tableList) -> @doList(tableList)
 
-    joins: (joinList) -> @doList(joinList, ' ')
+    joins: (joinList) -> @doList(joinList, @f, ' ')
 
     from: (f) ->
         token = f._token
@@ -138,7 +145,7 @@ class SqlFormatter
         return @_doAliasedExpression(f._token, f._model, f.alias)
 
     join: (j) ->
-        str = " INNER JOIN " + @column(j) + " ON " + j.predicate.toSql(@)
+        str = " INNER JOIN " + @from(j) + " ON " + @f(j.predicate)
 
     tokenizeAtom: (atom) ->
         n = @parseWhenRawName(atom)
@@ -168,12 +175,16 @@ class SqlFormatter
             if column?
                 return column
 
-    select: (sql) ->
-        for t in sql.tables
+    addTables: (a) ->
+        for t in a
             token = @cacheExpressionToken(t)
             if (token instanceof SqlFullName)
                 t._model = @db.tablesByAlias[token.tip()]
                 @modelTables.push(t._model) if t._model?
+
+    select: (sql) ->
+        @addTables(sql.tables)
+        @addTables(sql.joins)
 
         ret = "SELECT #{@columns(sql.columns)} FROM #{@tables(sql.tables)}"
 
@@ -187,10 +198,17 @@ class SqlFormatter
         return " WHERE #{(c.whereClause.toSql(@))}" if (c.whereClause?)
         return ""
 
-    groupBy: (c) -> @doList(c.groupings, ', ', ' GROUP BY ')
+    groupBy: (c) -> @doList(c.groupings, @grouping, ', ', ' GROUP BY ')
 
-    orderBy: (c) -> @doList(c.orderings, ', ', ' ORDER BY ')
-    ordering: (o) -> "#{o.expr.toSql(@)} #{o.direction}"
+    orderBy: (c) -> @doList(c.orderings, @ordering, ', ', ' ORDER BY ')
+
+    grouping: (atom) -> @_doColumn(atom)
+
+    ordering: (o) ->
+        s = @_doColumn(@_firstOrSelf(o))
+        dir = if @_secondOrNull(o) == 'DESC' then 'DESC' else 'ASC'
+
+        "#{s} #{dir}"
 
     insert: (i) ->
         return "INSERT #{@f(i.targetTable)}"

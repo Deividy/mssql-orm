@@ -24,4 +24,11 @@ describe('SqlSelect with aliased schema', () ->
             "[Customers] as [customer] WHERE [FirstName] = 'Bilbo'"
         h.assertAlias(s, expected)
     )
+
+    it('Aliases in ORDER BY', ->
+        s = sql.select('CustomerId').from('customer').orderBy('CustomerFirstName')
+        expected = "SELECT [id] as [CustomerId] FROM [Customers] as [customer] " +
+            "ORDER BY [FirstName] ASC"
+        h.assertAlias(s, expected)
+    )
 )
