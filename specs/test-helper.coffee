@@ -11,7 +11,7 @@ ezekiel = requireSrc('ezekiel')
 Database = requireSrc('db/database')
 
 debug = false
-db = null
+sharedDb = null
 defaultEngine = 'mssql'
 
 newSchema = () -> {
@@ -42,19 +42,20 @@ newAliasedSchema = () -> {
     keyColumns: []
 }
 
-
-blankDb = () -> new Database({ database: 'blank' })
+blankDb = () ->
+    db = new Database({ database: 'blank' })
+    db.Formatter = SqlFormatter
+    return db
 
 aliasDb = () ->
     db = new Database({database: 'alias'})
+    db.Formatter = SqlFormatter
     db.loadSchema(newAliasedSchema())
     return db
 
-f = new SqlFormatter(blankDb())
-aliasF = new SqlFormatter(aliasDb())
-
-assertSqlFormatting = (formatter, sql, expected, debug) ->
-    ret = sql.toSql(formatter)
+assertSqlFormatting = (db, sql, expected, debug) ->
+    f = new SqlFormatter(db)
+    ret = f.format(sql)
     if (ret != expected) || debug
         console.log("--- Return ---")
         console.log("'#{ret}'")
@@ -75,7 +76,7 @@ connectToDb = (cb) ->
 
 before((done) ->
     connectToDb((database) ->
-        db = database
+        sharedDb = database
         done()
     )
 )
@@ -85,12 +86,12 @@ module.exports = {
     requireSrc: requireSrc
     defaultDbConfig: testConfig.databases[defaultEngine]
 
-    assertSql: (sql, expected, debug) -> assertSqlFormatting(f, sql, expected, debug)
-    assertAlias: (sql, expected, debug) -> assertSqlFormatting(aliasF, sql, expected, debug)
+    assertSql: (sql, expected, debug) -> assertSqlFormatting(blankDb(), sql, expected, debug)
+    assertAlias: (sql, expected, debug) -> assertSqlFormatting(aliasDb(), sql, expected, debug)
 
     inspect: (o) -> console.log(util.inspect(o, true, 5, true))
 
-    getSharedDb: (engine = defaultEngine) -> db
+    getSharedDb: (engine = defaultEngine) -> sharedDb
     connectToDb: connectToDb
 
     newSchema: newSchema

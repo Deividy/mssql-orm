@@ -1,5 +1,5 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken, SqlSelect, SqlExpression } = require('../sql')
+{ SqlPredicate, SqlToken, SqlSelect, SqlExpression, SqlRawName, SqlFullName } = sql = require('../sql')
 
 SqlIdentifier = SqlToken.SqlIdentifier
 
@@ -12,6 +12,7 @@ rgxExpression = /[()\+\*\-/]/
 
 class SqlFormatter
     constructor: (@db) ->
+        @modelTables = []
 
     f: (v) ->
         return v.toSql(@) if v instanceof SqlToken
@@ -25,17 +26,7 @@ class SqlFormatter
 
     parens: (contents) -> "(#{contents.toSql(@)})"
 
-    isExpression: (e) -> rgxExpression.test(e)
-
-    relop: (left, op, right) ->
-        # MUST: replace with data driven approach
-        op = op.toUpperCase()
-        r = switch op
-            when 'IN' then "(#{@f(right)})"
-            when 'BETWEEN' then "#{@f(right[0])} AND #{@f(right[1])}"
-            else @f(right)
-
-        return "#{@f(left)} #{op} #{r}"
+    isExpression: (e) -> _.isString(e) && rgxExpression.test(e)
 
     and: (terms) ->
         t = _.map(terms, @f, @)
@@ -45,49 +36,88 @@ class SqlFormatter
         t = _.map(terms, @f, @)
         return "(#{t.join(" OR " )})"
 
-    name: (n) ->
-        parts = @parseName(n.name)
-        if (parts.length == 1 && n.prefixHint?)
-            parts.unshift(n.prefixHint)
-        return @names(parts)
+    rawName: (n) -> @parseWhenRawName(n).toSql(@)
 
-    multiPartName: (m) -> @names(m.parts)
-    names: (names) -> _.map(names, (p) -> "[#{p}]").join(".")
+    fullName: (m) -> @joinNameParts(m.parts)
 
-    parseName: (name) ->
+    joinNameParts: (names) -> _.map(names, (p) -> "[#{p}]").join(".")
+
+    parseWhenRawName: (t) ->
+        if t instanceof SqlFullName
+            return t
+
+        if t instanceof SqlRawName
+            return @fullNameFromString(t.name)
+
+        return t
+
+    fullNameFromString: (s) ->
         parts = []
-        while (match = rgxParseName.exec(name))
+        while (match = rgxParseName.exec(s))
             parts.push(match[1])
-        return parts
+
+        return new SqlFullName(parts)
 
     delimit: (s) ->
         return "[#{s}]"
 
-    aliasedExpression: (e) ->
-        expr = e.expr
-        alias = e.alias
+    column: (c) ->
+        token = @tokenizeAtom(c.atom)
+        model = @findColumnModel(token)
+        s = @_doToken(token, model)
 
-        if (expr instanceof SqlToken)
-            s = "(#{expr.toSql(@)})"
-        else if (e._model?)
-            # MUST: we assume the model is a DB object at this point. We'll need to handle
-            # virtual columns, tables, etc.
-            s = @delimit(e._model.name)
-            alias = e.expr
-        else if @isExpression(expr)
-            s = "#{expr}"
-        else if _.isString(expr)
-            # MUST: use a different method here that parses a raw SQL name
-            s = @delimit(expr)
-            alias ?= expr
-        else
-            s = @literal(expr)
+        alias = @_doAlias(token, model, c.alias)
+        if (alias?)
+            s += " as #{@delimit(alias)}"
 
-        s += " as #{@delimit(alias)}" if (alias?)
         return s
 
+    _doToken: (token, model) ->
+        if (model?)
+            # MUST: we assume the column is a DB object at this point. We'll need to handle
+            # virtual tables, columns, etc. one day
+            if (p = token.prefix())
+                return @joinNameParts([p, model.name])
+            else
+                return @delimit(model.name)
+        else
+            return @f(token)
 
-    column: (c) -> @aliasedExpression(c)
+    _doAlias: (token, model, alias) ->
+        if alias?
+            return alias
+
+        if model?
+            return model.alias
+
+        if token instanceof SqlFullName
+            return token.tip()
+
+        return null
+
+    _doAliasedExpression: (token, model, alias) ->
+        e = @_doToken(token, model)
+        a = @_doAlias(token, model, alias)
+
+        return if a? then "#{e} as #{@delimit(a)}" else e
+
+
+    relop: (left, op, right) ->
+        leftToken = @tokenizeAtom(left)
+        model = @findColumnModel(leftToken)
+        l = @_doToken(leftToken, model)
+        
+        # MUST: replace with data driven approach
+        op = op.toUpperCase()
+        r = switch op
+            when 'IN' then "(#{@f(right)})"
+            when 'BETWEEN' then "#{@f(right[0])} AND #{@f(right[1])}"
+            else
+                rightToken = @parseWhenRawName(right)
+                model = @findColumnModel(rightToken)
+                r = @_doToken(rightToken, model)
+
+        return "#{l} #{op} #{r}"
 
     doList: (collection, separator = ', ', prelude = '') ->
         return '' unless collection?.length > 0
@@ -102,25 +132,49 @@ class SqlFormatter
 
     joins: (joinList) -> @doList(joinList, ' ')
 
-    from: (f) -> @aliasedExpression(f)
+    from: (f) ->
+        token = f._token
+        model = f._model
+        return @_doAliasedExpression(f._token, f._model, f.alias)
+
     join: (j) ->
         str = " INNER JOIN " + @column(j) + " ON " + j.predicate.toSql(@)
 
+    tokenizeAtom: (atom) ->
+        n = @parseWhenRawName(atom)
+        if n instanceof SqlFullName
+            return n
+
+        if @isExpression(atom)
+            return sql.expr(atom)
+
+        if _.isString(atom)
+            return @fullNameFromString(atom)
+
+        return atom
+
+    cacheExpressionToken: (e) -> e._token = @tokenizeAtom(e.atom)
+
+    findColumnModel: (name) ->
+        unless name instanceof SqlFullName
+            return
+
+        table = name.prefix()
+        if table?
+            return @db.tablesByAlias[table]?.columnsByAlias[name.tip()]
+
+        for t in @modelTables
+            column = t.columnsByAlias[name.tip()]
+            if column?
+                return column
+
     select: (sql) ->
-        q = "SELECT "
+        for t in sql.tables
+            token = @cacheExpressionToken(t)
+            if (token instanceof SqlFullName)
+                t._model = @db.tablesByAlias[token.tip()]
+                @modelTables.push(t._model) if t._model?
 
-        for f in sql.tables
-            if _.isString(f.expr)
-                f._model = @db.tablesByAlias[f.expr]
-
-        for c in sql.columns
-            if _.isString(c.expr)
-                for t in sql.tables when t._model?
-                    column = t._model.columnsByAlias[c.expr]
-                    if column?
-                        c._model = column
-                        break
-                    
         ret = "SELECT #{@columns(sql.columns)} FROM #{@tables(sql.tables)}"
 
         ret += @joins(sql.joins)

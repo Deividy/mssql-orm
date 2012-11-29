@@ -1,15 +1,16 @@
 _ = require("underscore")
-{ SqlPredicate, SqlName, SqlStatement, SqlToken } = sql = require('./index')
+{ SqlPredicate, SqlRawName, SqlStatement, SqlToken } = sql = require('./index')
 
 class SqlAliasedExpression extends SqlToken
     constructor: (a) ->
         if _.isArray(a)
-            [@expr, @alias] = a
+            [@atom, @alias] = a
         else
-            @expr = a
+            @atom = a
 
         # This is only used by formatters, users don't have to worry about it
         @_model = null
+        @_token = null
 
 class SqlColumn extends SqlAliasedExpression
     toSql: (f) -> f.column(@)

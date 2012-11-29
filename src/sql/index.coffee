@@ -12,8 +12,8 @@ sql = {
 
     name: (n) ->
         return n if n instanceof SqlToken
-        return new SqlMultiPartName(n) if _.isArray(n)
-        return new SqlName(n)
+        return new SqlFullName(n) if _.isArray(n)
+        return new SqlRawName(n)
 
     expr: (e) -> new SqlExpression(e)
     and: (terms...) -> new SqlAnd(_.map(terms, SqlPredicate.wrap))
@@ -48,13 +48,15 @@ class SqlLiteral extends SqlToken
     constructor: (@l) ->
     toSql: (f) -> f.literal(@l)
 
-class SqlName extends SqlToken
+class SqlRawName extends SqlToken
     constructor: (@name) ->
-    toSql: (f) -> f.name(@)
+    toSql: (f) -> f.rawName(@)
 
-class SqlMultiPartName extends SqlToken
+class SqlFullName extends SqlToken
     constructor: (@parts) ->
-    toSql: (f) -> f.multiPartName(@)
+    toSql: (f) -> f.fullName(@)
+    tip: () -> _.last(@parts)
+    prefix: () -> @parts[@parts.length - 2]
 
 class SqlParens extends SqlToken
     constructor: (@contents) ->
@@ -62,10 +64,10 @@ class SqlParens extends SqlToken
     toSql: (f) -> f.parens(@contents)
 
 class SqlRelop extends SqlToken
-    @pushRelops: (left, right, relops = []) ->
-        if _.isString(left)
-            left = sql.nameOrExpr(left)
+    if _.isString(left)
+        left = sql.nameOrExpr(left)
 
+    @pushRelops: (left, right, relops = []) ->
         if _.isArray(right)
             relops.push(new SqlRelop(left, 'IN', right))
         else if _.isObject(right) && !(right instanceof SqlToken)
@@ -167,8 +169,8 @@ module.exports = sql
 _.extend(sql, {
     SqlToken: SqlToken
     SqlExpression: SqlExpression
-    SqlName: SqlName
-    SqlMultiPartName: SqlMultiPartName
+    SqlRawName: SqlRawName
+    SqlFullName: SqlFullName
     SqlPredicate: SqlPredicate
     SqlAnd: SqlAnd
     SqlOr: SqlOr

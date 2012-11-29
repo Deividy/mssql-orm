@@ -12,7 +12,7 @@ class Database extends DbObject
         @constraintsByName = {}
         @name = @config.database
 
-        @adapter = @utils = @formatter = null
+        @adapter = @utils = null
 
     run: (stmt, callback) ->
         @execute(stmt, { onDone: () -> callback(null) }, callback)
@@ -32,7 +32,11 @@ class Database extends DbObject
 
     _generateSql: (o) ->
         if (o.stmt instanceof SqlToken)
-            o.stmt = o.stmt.toSql(@formatter)
+            o.stmt = @format(o.stmt)
+
+    format: (sql) ->
+        f = new @Formatter(@)
+        return f.format(sql)
 
     execute: (query, opt, callback) ->
         if (_.isString(query) || query instanceof SqlToken)

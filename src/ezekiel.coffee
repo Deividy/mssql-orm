@@ -23,8 +23,8 @@ e = ezekiel = {
         db.adapter = e.getAdapter(config)
 
         dialect = e.getDialect(config, db)
-        db.utils = dialect.utils
-        db.formatter = dialect.formatter
+        db.utils = new dialect.Utils(db)
+        db.Formatter = dialect.Formatter
 
         cb(null, db)
 
@@ -37,8 +37,7 @@ e = ezekiel = {
     getDialect: (config, db) ->
         name = config.dialect ? engines[config.engine].dialect
         path = "./dialects/#{name}"
-        dialect = require(path)
-        return new dialect(db)
+        return require(path)
 }
 
 module.exports = ezekiel
