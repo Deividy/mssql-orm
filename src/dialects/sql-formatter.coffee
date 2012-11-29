@@ -1,5 +1,6 @@
 _ = require('underscore')
-{ SqlPredicate, SqlToken, SqlSelect, SqlExpression, SqlRawName, SqlFullName } = sql = require('../sql')
+sql = require('../sql')
+{ SqlPredicate, SqlToken, SqlSelect, SqlExpression, SqlRawName, SqlFullName } = sql
 
 SqlIdentifier = SqlToken.SqlIdentifier
 
