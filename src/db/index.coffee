@@ -48,7 +48,7 @@ class AliasedObject extends DbObject
             throw new Error(msg)
 
         oldValue = @[prop]
-        siblings[oldValue] = null if oldValue?
+        delete siblings[oldValue] if oldValue?
         siblings[newValue] = @
         @[prop] = newValue
 
