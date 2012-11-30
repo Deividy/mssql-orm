@@ -54,9 +54,16 @@ describe('SqlPredicate', () ->
         assert(p, exp)
     )
 
-    it('transforms JS array for column values into SQL IN operator', () ->
+    it('transforms JS array of numbers into SQL IN operator', () ->
         p = sql.predicate({ age: [22, 30, 40] , name: 'deividy' })
-        exp = "([age] IN (22,30,40) AND [name] = 'deividy')"
+        exp = "([age] IN (22, 30, 40) AND [name] = 'deividy')"
+        
+        assert(p, exp)
+    )
+
+    it('transforms JS array of strings into SQL IN operator', () ->
+        p = sql.predicate({ last: ['Granger', 'Baggins'] , name: 'Hermione' })
+        exp = "([last] IN ('Granger', 'Baggins') AND [name] = 'Hermione')"
         
         assert(p, exp)
     )

@@ -23,6 +23,9 @@ class SqlFormatter
         if (_.isString(l))
             return "'" + l.replace("'","''") + "'"
 
+        if (_.isArray(l))
+            return _.map(l, (i) => @literal(i)).join(', ')
+
         return l.toString()
 
     parens: (contents) -> "(#{contents.toSql(@)})"

@@ -16,12 +16,12 @@ defaultEngine = 'mssql'
 
 newSchema = () -> {
     tables: [
-        { name: 'Customers', }
-        { name: 'Orders' }
+        { name: 'customers', }
+        { name: 'orders' }
     ]
     columns: [
-        { tableName: 'Customers', name: 'Id', position: 1 }
-        { tableName: 'Customers', name: 'FirstName', position: 2 }
+        { tableName: 'customers', name: 'id', position: 1 }
+        { tableName: 'customers', name: 'firstName', position: 2 }
     ]
     keys: []
     foreignKeys: []
@@ -93,6 +93,7 @@ module.exports = {
     defaultDbConfig: testConfig.databases[defaultEngine]
 
     assertSql: (sql, expected, debug) -> assertSqlFormatting(blankDb(), sql, expected, debug)
+    assertSchemaSql: (sql, expected, debug) -> assertSqlFormatting(schemaDb(), sql, expected, debug)
     assertAlias: (sql, expected, debug) -> assertSqlFormatting(aliasedDb(), sql, expected, debug)
 
     inspect: (o) -> console.log(util.inspect(o, true, 5, true))
