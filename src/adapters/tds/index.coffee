@@ -7,10 +7,10 @@ class TdsAdapter
         @config = _.clone(config)
         @config.database ?= 'master'
 
-        # MUST: implement destroy, need to see what TDS offers
         @pool = poolModule.Pool({
             name: 'tds'
             create: (cb) => @_createConnection(@config, cb)
+            destroy: (conn) -> conn.end()
         })
 
     _createConnection: (options, callback) ->
