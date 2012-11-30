@@ -53,6 +53,12 @@ aliasDb = () ->
     db.loadSchema(newAliasedSchema())
     return db
 
+schemaDb = () ->
+    db = new Database( {database: 'withSchema' })
+    db.Formatter = SqlFormatter
+    db.loadSchema(newSchema())
+    return db
+
 assertSqlFormatting = (db, sql, expected, debug) ->
     f = new SqlFormatter(db)
     ret = f.format(sql)
@@ -97,4 +103,5 @@ module.exports = {
     newSchema: newSchema
     newAliasedSchema: newAliasedSchema
     blankDb: blankDb
+    schemaDb: schemaDb
 }
