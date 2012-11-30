@@ -29,7 +29,7 @@ e = ezekiel = {
         cb(null, db)
 
     getAdapter: (config) ->
-        name = config.adapter ? engines[config.engine].adapter
+        name = 'tedious'
         path = "./adapters/#{name}"
         adapter = require(path)
         return new adapter(config)
