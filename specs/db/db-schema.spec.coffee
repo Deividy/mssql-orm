@@ -56,12 +56,16 @@ describe('Database loadSchema()', () ->
     )
 
     it('Throws if a name clashes', ->
-        clash = () -> testDb.tablesByName.Customers.alias = 'Orders'
-        clash.should.throw(/it is already taken/)
+        h.schemaDb((db) ->
+            clash = () -> db.tablesByName.Customers.name = 'Orders'
+            clash.should.throw(/it is already taken/)
+        )
     )
 
     it('Throws if an alias clashes', ->
-        clash = () -> testDb.tablesByName.Customers.alias = 'Orders'
-        clash.should.throw(/it is already taken/)
+        h.schemaDb((db) ->
+            clash = () -> db.tablesByName.Customers.alias = 'Orders'
+            clash.should.throw(/it is already taken/)
+        )
     )
 )
