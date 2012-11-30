@@ -54,10 +54,12 @@ class SqlSelect extends SqlStatement
         @cntTake = n
         return @
 
+    # SHOULD: get rid of SqlFrom and make it simple like columns, order by, and group by
     from: (table) ->
         @addFrom(new SqlFrom(table), @tables)
         return @
 
+    # SHOULD: allow joins to be simple strings with table names when nothing fancy is being done
     join: (table, terms...) ->
         @lastJoin = new SqlJoin(table, terms)
         @addFrom(@lastJoin, @joins)

@@ -81,7 +81,6 @@ class SqlFormatter
 
         return s
 
-
     _doToken: (token, model) ->
         if (model?)
             # MUST: we assume the column is a DB object at this point. We'll need to handle

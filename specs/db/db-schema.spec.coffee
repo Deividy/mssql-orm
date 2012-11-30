@@ -1,5 +1,4 @@
 h = require('../test-helper')
-fs = require('fs')
 
 should = require('should')
 { Table, Column } = h.requireSrc('db')
