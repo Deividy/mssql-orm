@@ -68,4 +68,12 @@ describe('Database loadSchema()', () ->
             clash.should.throw(/it is already taken/)
         )
     )
+
+    it('Keeps aliases hash tidy', ->
+        a = h.aliasedDb().tablesByAlias
+        Object.keys(a).sort().should.eql(['customer', 'order'])
+
+        a.customer.alias = 'cust'
+        Object.keys(a).sort().should.eql(['cust', 'order'])
+    )
 )

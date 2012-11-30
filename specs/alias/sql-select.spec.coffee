@@ -3,6 +3,12 @@ sql = h.requireSrc('sql')
 SqlFormatter = h.requireSrc('dialects/sql-formatter')
 
 describe('SqlSelect with aliased schema', () ->
+    it('Has the right aliases in place', ->
+        d = h.aliasedDb()
+        Object.keys(d.tablesByAlias).sort().should.eql(['customer', 'order'])
+    )
+
+
     it('Handles basic SELECT', ->
         s = sql.select('CustomerId', 'CustomerFirstName').from('customer')
         expected = "SELECT [id] as [CustomerId], [FirstName] as [CustomerFirstName] FROM " +

@@ -47,7 +47,7 @@ blankDb = () ->
     db.Formatter = SqlFormatter
     return db
 
-aliasDb = () ->
+aliasedDb = () ->
     db = new Database({database: 'alias'})
     db.Formatter = SqlFormatter
     db.loadSchema(newAliasedSchema())
@@ -93,7 +93,7 @@ module.exports = {
     defaultDbConfig: testConfig.databases[defaultEngine]
 
     assertSql: (sql, expected, debug) -> assertSqlFormatting(blankDb(), sql, expected, debug)
-    assertAlias: (sql, expected, debug) -> assertSqlFormatting(aliasDb(), sql, expected, debug)
+    assertAlias: (sql, expected, debug) -> assertSqlFormatting(aliasedDb(), sql, expected, debug)
 
     inspect: (o) -> console.log(util.inspect(o, true, 5, true))
 
@@ -104,4 +104,5 @@ module.exports = {
     newAliasedSchema: newAliasedSchema
     blankDb: blankDb
     schemaDb: schemaDb
+    aliasedDb: aliasedDb
 }
