@@ -73,6 +73,9 @@ class Database extends DbObject
     addSchemaItems: (constructor, list, parent) ->
         for i in list
             p = parent ? @tablesByName[i.tableName]
+            # If parent is a view, then we don't have it it, so bail out. MUST: handle views
+            # in the future
+            return unless p?
             new constructor(p, i)
 
     addKeyColumns: (list) ->
